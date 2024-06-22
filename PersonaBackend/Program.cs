@@ -1,12 +1,17 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Mvc.Controllers;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using PersonaBackend.Authentication;
+using PersonaBackend.Database;
 using PersonaBackend.Swagger;
 using Swashbuckle.AspNetCore.SwaggerGen;
 using System.Text;
+using Microsoft.EntityFrameworkCore;
+using PersonaBackend.Database.IRepositories;
+using PersonaBackend.Database.Repository;
 
 namespace PersonaBackend
 {
@@ -39,6 +44,22 @@ namespace PersonaBackend
             builder.Services.AddSwaggerGen();
 
             builder.Services.AddTransient<IConfigureOptions<SwaggerGenOptions>, ConfigureSwaggerOptions>();
+
+            DotNetEnv.Env.Load(".env");
+
+            var serverName = DotNetEnv.Env.GetString("SERVER_NAME")?.ToString();
+            var databaseName = DotNetEnv.Env.GetString("DATABASE_NAME")?.ToString();
+            var username = DotNetEnv.Env.GetString("USERNAME")?.ToString();
+            var password = DotNetEnv.Env.GetString("PASSWORD")?.ToString();
+
+            var connectionString = "Server=" + serverName + ";Port=5432;Database=" + databaseName + ";Username=" + username + ";Password=" + password;
+            builder.Services.AddDbContext<PersonaDatabaseContext>(options =>
+            {
+                options.UseNpgsql(connectionString ??
+                    throw new InvalidOperationException("Connection String not found or invalid"));
+            });
+
+            builder.Services.AddScoped<IUserRepository, UserRepository>();
 
             var app = builder.Build();
 

@@ -1,5 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using PersonaBackend.Authentication;
+using PersonaBackend.Database.IRepositories;
+using PersonaBackend.Database.Models;
 
 namespace PersonaBackend.Controllers
 {
@@ -7,6 +9,13 @@ namespace PersonaBackend.Controllers
     [ApiController]
     public class TestController : ControllerBase
     {
+        private readonly IUserRepository userRepository;
+
+        public TestController(IUserRepository usersRepository)
+        {
+            this.userRepository = usersRepository;
+        }
+
         [HttpPost("Impregnate")]
         [ServiceAuthorization("HandOfZeus")]
         public async Task<IActionResult> Impregnate()
@@ -29,9 +38,12 @@ namespace PersonaBackend.Controllers
         }
 
         [HttpGet("NoAuth")]
-        public async Task<IActionResult> NoAuth()
+        [ProducesResponseType(200, Type = typeof(IEnumerable<UserModel>))]
+        public IActionResult NoAuth()
         {
-            return Ok("NoAuth");
+            var users = userRepository.GetUsers();
+
+            return Ok(users);
         }
     }
 }
