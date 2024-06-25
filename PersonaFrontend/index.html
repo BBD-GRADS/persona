@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="styles.css">
+    <title>Persona Manager</title>
+</head>
+<body>
+    <aside class="zeusFeed">
+        <h3>Zeus Feed</h3>
+        <ul>
+            <li>
+                <h4>Event Title</h4>
+                <p>Time occured: </p>
+            </li>
+            <li>
+                <h4>Event Title</h4>
+                <p>Time occured: </p>
+            </li>
+            <li>
+                <h4>Event Title</h4>
+                <p>Time occured: </p>
+            </li>
+            <li>
+                <h4>Event Title</h4>
+                <p>Time occured: </p>
+            </li>
+            <li>
+                <h4>Event Title</h4>
+                <p>Time occured: </p>
+            </li>
+            <li>
+                <h4>Event Title</h4>
+                <p>Time occured: </p>
+            </li>
+            <li>
+                <h4>Event Title</h4>
+                <p>Time occured: </p>
+            </li>
+        </ul>
+    </aside>
+    <header>
+        <h1>Persona Manager <button>Logout</button></h1>
+        <h2>Currently viewing Persona ID: None</h2>
+        <section>
+            <label for="pSearch">Search for a Persona ID: </label>
+            <input type="number" id="pSearch" name="pSearch">
+            <button id="pSearchButton">Search</button>
+            <button id="pSearchButton">Spawn A Child</button>
+        </section>
+    </header>
+    <section>
+        <h2>Persona Details</h2>
+        <button>Save Edits</button>
+        <ul class="personaDetailsList">
+            <li>
+                <article>
+                    <h3>
+                        Name
+                    </h3>
+                    <p>
+                        FirstName LastName
+                    </p>
+                    <button>Edit</button>
+                </article>
+            </li>
+            <li>
+                <article>
+                    <h3>
+                        Age In Days
+                    </h3>
+                    <p>
+                        AgeValue
+                    </p>
+                    <button>Edit</button>
+                </article>
+            </li>
+            <li>
+                <article>
+                    <h3>
+                        Hunger
+                    </h3>
+                    <p>
+                        HungerValue
+                    </p>
+                    <button>Edit</button>
+                </article>
+            </li>
+            <li>
+                <article>
+                    <h3>
+                        Alive
+                    </h3>
+                    <p>
+                        True/False
+                    </p>
+                    <button>Edit</button>
+                </article>
+            </li>
+            <li>
+                <article>
+                    <h3>
+                        Health From Food
+                    </h3>
+                    <p>
+                        HealthFromFoodValue
+                    </p>
+                    <button>Edit</button>
+                </article>
+            </li>
+            <li>
+                <article>
+                    <h3>
+                        Num Food Items
+                    </h3>
+                    <p>
+                        NumFoodItemsValue
+                    </p>
+                    <button>Edit</button>
+                </article>
+            </li>
+            <li>
+                <article>
+                    <h3>
+                        Num Electronics
+                    </h3>
+                    <p>
+                        NumElectronicsValue
+                    </p>
+                    <button>Edit</button>
+                </article>
+            </li>
+            <li>
+                <article>
+                    <h3>
+                        Num Stocks
+                    </h3>
+                    <p>
+                        NumStocksValue
+                    </p>
+                    <button>Edit</button>
+                </article>
+            </li>
+            <li>
+                <article>
+                    <h3>
+                        Diseases ID
+                    </h3>
+                    <p>
+                        DiseasesIDValue
+                    </p>
+                    <button>Edit</button>
+                </article>
+            </li>
+            <li>
+                <article>
+                    <h3>
+                        Next of Kin
+                    </h3>
+                    <p>
+                        NextOfKinIDValue
+                    </p>
+                    <button>Edit</button>
+                </article>
+            </li>
+            <li>
+                <article>
+                    <h3>
+                        Partner
+                    </h3>
+                    <p>
+                        PartnerIDValue
+                    </p>
+                    <button>Edit</button>
+                </article>
+            </li>
+            <li>
+                <article>
+                    <h3>
+                        Parent
+                    </h3>
+                    <p>
+                        ParentIDValue
+                    </p>
+                    <button>Edit</button>
+                </article>
+            </li>
+            <li>
+                <article>
+                    <h3>
+                        Home Owner Status
+                    </h3>
+                    <p>
+                        Renter/Owner
+                    </p>
+                    <button>Edit</button>
+                </article>
+            </li>
+            <li>
+                <article>
+                    <h3>
+                        Bank Account
+                    </h3>
+                    <p>
+                        BankAccountValue
+                    </p>
+                    <button>Edit</button>
+                </article>
+            </li>
+            <li>
+                <article>
+                    <h3>
+                        Short Term Lending Account
+                    </h3>
+                    <p>
+                        ShortTermLendingAccountID
+                    </p>
+                    <button>Edit</button>
+                </article>
+            </li>
+            <li>
+                <article>
+                    <h3>
+                        Mortgage Account
+                    </h3>
+                    <p>
+                        MortgageAccountID
+                    </p>
+                    <button>Edit</button>
+                </article>
+            </li>
+        </ul>
+    </section>
+    <section>
+        <h2>Diseases for Persona 0</h2>
+        <button>Add a disease</button>
+        <ul class="personaDetailsList">
+            <li>
+                <article>
+                    <h3>
+                        Typhoid Fever
+                    </h3>
+                    <p>
+                        DiseaseIDValue
+                    </p>
+                    <button>Remove</button>
+                </article>
+            </li>
+            <li>
+                <article>
+                    <h3>
+                        Covid19
+                    </h3>
+                    <p>
+                        DiseaseIDValue
+                    </p>
+                    <button>Remove</button>
+                </article>
+            </li>
+            <li>
+                <article>
+                    <h3>
+                        Polio
+                    </h3>
+                    <p>
+                        DiseaseIDValue
+                    </p>
+                    <button>Remove</button>
+                </article>
+            </li>
+            <li>
+                <article>
+                    <h3>
+                        Ligma :(
+                    </h3>
+                    <p>
+                        DiseaseIDValue
+                    </p>
+                    <button>Remove</button>
+                </article>
+            </li>
+        </ul>
+    </section>
+
+    <section>
+        <h2>Personas Stats</h2>
+        <ul class="personaDetailsList">
+            <li>
+                <article>
+                    <h3>
+                        Persona Population (Alive)
+                    </h3>
+                    <p>
+                        198290
+                    </p>
+                </article>
+            </li>
+            <li>
+                <article>
+                    <h3>
+                        Deceased
+                    </h3>
+                    <p>
+                        3312
+                    </p>
+                </article>
+            </li>
+        </ul>
+    </section>
+</body>
+<script src="index.js"></script>
+</html>
