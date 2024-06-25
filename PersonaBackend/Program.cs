@@ -6,12 +6,13 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using PersonaBackend.Authentication;
 using PersonaBackend.Database;
-using PersonaBackend.Swagger;
 using Swashbuckle.AspNetCore.SwaggerGen;
 using System.Text;
 using Microsoft.EntityFrameworkCore;
 using PersonaBackend.Database.IRepositories;
 using PersonaBackend.Database.Repository;
+using PersonaBackend.Utils;
+using Swashbuckle.AspNetCore.Filters;
 
 namespace PersonaBackend
 {
@@ -22,8 +23,7 @@ namespace PersonaBackend
             var builder = WebApplication.CreateBuilder(args);
 
             // Add services to the container.
-
-            builder.Services.AddSingleton<ApiKeyService>();
+            builder.Services.AddSingleton(AWSSecretsManagerService.Instance);
 
             // Add CORS policy
             builder.Services.AddCors(options =>
@@ -41,12 +41,26 @@ namespace PersonaBackend
             builder.Services.AddControllers();
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
-            builder.Services.AddSwaggerGen();
+            builder.Services.AddSwaggerGen(c =>
+            {
+                c.SwaggerDoc("v1", new OpenApiInfo { Title = "PersonaBackend API", Version = "v1" });
 
-            builder.Services.AddTransient<IConfigureOptions<SwaggerGenOptions>, ConfigureSwaggerOptions>();
+                // Configure Swagger to use x-api-key header
+                c.AddSecurityDefinition("ApiKey", new OpenApiSecurityScheme
+                {
+                    Description = "API Key needed to access the endpoints. Example: 'Bearer {your token}'",
+                    Name = "x-api-key",
+                    In = ParameterLocation.Header,
+                    Type = SecuritySchemeType.ApiKey,
+                    Scheme = "ApiKeyScheme"
+                });
+
+                c.OperationFilter<ConditionalOperationFilter>();
+            });
+
+            #region DB setup
 
             DotNetEnv.Env.Load(".env");
-
             var serverName = DotNetEnv.Env.GetString("SERVER_NAME")?.ToString();
             var databaseName = DotNetEnv.Env.GetString("DATABASE_NAME")?.ToString();
             var username = DotNetEnv.Env.GetString("USERNAME")?.ToString();
@@ -61,6 +75,8 @@ namespace PersonaBackend
 
             builder.Services.AddScoped<IUserRepository, UserRepository>();
 
+            #endregion DB setup
+
             var app = builder.Build();
 
             // Configure the HTTP request pipeline.
@@ -74,10 +90,8 @@ namespace PersonaBackend
 
             app.UseCors("OpelCorsa");
 
-            //app.UseAuthentication();
+            app.UseAuthentication();
             app.UseAuthorization();
-
-            app.UseMiddleware<ApiKeyAuthMiddleware>();
 
             app.MapControllers();
 
