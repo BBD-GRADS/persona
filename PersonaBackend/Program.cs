@@ -1,18 +1,7 @@
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Mvc.Controllers;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Options;
-using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
-using PersonaBackend.Authentication;
-using PersonaBackend.Database;
-using Swashbuckle.AspNetCore.SwaggerGen;
-using System.Text;
 using Microsoft.EntityFrameworkCore;
-using PersonaBackend.Database.IRepositories;
-using PersonaBackend.Database.Repository;
 using PersonaBackend.Utils;
-using Swashbuckle.AspNetCore.Filters;
+using PersonaBackend.Data;
 
 namespace PersonaBackend
 {
@@ -67,17 +56,17 @@ namespace PersonaBackend
             var password = DotNetEnv.Env.GetString("PASSWORD")?.ToString();
 
             var connectionString = "Server=" + serverName + ";Port=5432;Database=" + databaseName + ";Username=" + username + ";Password=" + password;
-            builder.Services.AddDbContext<PersonaDatabaseContext>(options =>
+            builder.Services.AddDbContext<Context>(options =>
             {
                 options.UseNpgsql(connectionString ??
                     throw new InvalidOperationException("Connection String not found or invalid"));
             });
 
-            builder.Services.AddScoped<IUserRepository, UserRepository>();
+            //builder.Services.AddScoped<IUserRepository, UserRepository>();
 
-            #endregion DB setup
+        #endregion DB setup
 
-            var app = builder.Build();
+        var app = builder.Build();
 
             // Configure the HTTP request pipeline.
             if (app.Environment.IsDevelopment())
