@@ -2,6 +2,10 @@ using Microsoft.OpenApi.Models;
 using Microsoft.EntityFrameworkCore;
 using PersonaBackend.Utils;
 using PersonaBackend.Data;
+using Microsoft.Extensions.Options;
+using System.Reflection;
+using Microsoft.AspNetCore.Hosting;
+using Swashbuckle.AspNetCore.Filters;
 
 namespace PersonaBackend
 {
@@ -33,19 +37,24 @@ namespace PersonaBackend
             builder.Services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "PersonaBackend API", Version = "v1" });
+                var xmlFilename = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+                c.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, xmlFilename));
+                c.EnableAnnotations();
+                c.ExampleFilters();
 
                 // Configure Swagger to use x-api-key header
                 c.AddSecurityDefinition("ApiKey", new OpenApiSecurityScheme
                 {
-                    Description = "API Key needed to access the endpoints. Example: 'Bearer {your token}'",
+                    Description = "API Key needed to access the endpoints.",
                     Name = "x-api-key",
                     In = ParameterLocation.Header,
                     Type = SecuritySchemeType.ApiKey,
                     Scheme = "ApiKeyScheme"
                 });
-
                 c.OperationFilter<ConditionalOperationFilter>();
             });
+
+            builder.Services.AddSwaggerExamplesFromAssemblyOf<Program>();
 
             #region DB setup
 
@@ -64,9 +73,9 @@ namespace PersonaBackend
 
             //builder.Services.AddScoped<IUserRepository, UserRepository>();
 
-        #endregion DB setup
+            #endregion DB setup
 
-        var app = builder.Build();
+            var app = builder.Build();
 
             // Configure the HTTP request pipeline.
             if (app.Environment.IsDevelopment())

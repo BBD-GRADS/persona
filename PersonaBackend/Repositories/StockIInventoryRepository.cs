@@ -4,7 +4,7 @@ using PersonaBackend.Interfaces;
 using PersonaBackend.Models.Persona;
 using System.Linq.Expressions;
 
-namespace PersonaBackend.Repositories.HandOfZeus
+namespace PersonaBackend.Repositories
 {
     public class StockIInventoryRepository : IGenericRepository<StockInventory>, IDisposable
     {

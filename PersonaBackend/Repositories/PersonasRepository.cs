@@ -4,9 +4,9 @@ using PersonaBackend.Interfaces;
 using PersonaBackend.Models.Persona;
 using System.Linq.Expressions;
 
-#pragma warning disable CS8603 
+#pragma warning disable CS8603
 
-namespace PersonaBackend.Repositories.HandOfZeus
+namespace PersonaBackend.Repositories
 {
     public class PersonasRepository : IGenericRepository<Persona>, IDisposable
     {
@@ -110,5 +110,3 @@ namespace PersonaBackend.Repositories.HandOfZeus
         }
     }
 }
-
-

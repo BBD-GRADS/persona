@@ -4,55 +4,55 @@ using PersonaBackend.Interfaces;
 using PersonaBackend.Models.Persona;
 using System.Linq.Expressions;
 
-namespace PersonaBackend.Repositories.HandOfZeus
+namespace PersonaBackend.Repositories
 {
-    public class HomeOwningStatusRepository : IGenericRepository<HomeOwningStatus>, IDisposable
+    public class BusinessesRepository : IGenericRepository<Business>, IDisposable
     {
         private Context _context;
 
-        public HomeOwningStatusRepository(Context context)
+        public BusinessesRepository(Context context)
         {
             _context = context;
         }
 
-        public IEnumerable<HomeOwningStatus> GetAll()
+        public IEnumerable<Business> GetAll()
         {
-            return _context.HomeOwningStatuses.ToList();
+            return _context.Businesses.ToList();
         }
 
-        public Task<List<HomeOwningStatus>> GetAllAsync()
+        public Task<List<Business>> GetAllAsync()
         {
-            return _context.HomeOwningStatuses.ToListAsync();
+            return _context.Businesses.ToListAsync();
         }
 
-        public HomeOwningStatus GetById(int id)
+        public Business GetById(int id)
         {
-            return _context.HomeOwningStatuses.Find(id);
+            return _context.Businesses.Find(id);
         }
 
-        public async Task<HomeOwningStatus> GetByIdAsync(int id)
+        public async Task<Business> GetByIdAsync(int id)
         {
-            return await _context.HomeOwningStatuses.FindAsync(id);
+            return await _context.Businesses.FindAsync(id);
         }
 
         public bool Remove(int id)
         {
-            var HomeOwningStatus = _context.HomeOwningStatuses.Find(id);
-            if (HomeOwningStatus is { })
+            var Business = _context.Businesses.Find(id);
+            if (Business is { })
             {
-                _context.HomeOwningStatuses.Remove(HomeOwningStatus);
+                _context.Businesses.Remove(Business);
                 return true;
             }
 
             return false;
         }
 
-        public void Add(in HomeOwningStatus sender)
+        public void Add(in Business sender)
         {
             _context.Add(sender).State = EntityState.Added;
         }
 
-        public void Update(in HomeOwningStatus sender)
+        public void Update(in Business sender)
         {
             _context.Entry(sender).State = EntityState.Modified;
         }
@@ -87,22 +87,22 @@ namespace PersonaBackend.Repositories.HandOfZeus
             GC.SuppressFinalize(this);
         }
 
-        public HomeOwningStatus GetByIdWithIncludes(int id)
+        public Business GetByIdWithIncludes(int id)
         {
             throw new NotImplementedException();
         }
 
-        public Task<HomeOwningStatus> GetByIdWithIncludesAsync(int id)
+        public Task<Business> GetByIdWithIncludesAsync(int id)
         {
             throw new NotImplementedException();
         }
 
-        public HomeOwningStatus Select(Expression<Func<HomeOwningStatus, bool>> predicate)
+        public Business Select(Expression<Func<Business, bool>> predicate)
         {
             throw new NotImplementedException();
         }
 
-        public Task<HomeOwningStatus> SelectAsync(Expression<Func<HomeOwningStatus, bool>> predicate)
+        public Task<Business> SelectAsync(Expression<Func<Business, bool>> predicate)
         {
             throw new NotImplementedException();
         }
