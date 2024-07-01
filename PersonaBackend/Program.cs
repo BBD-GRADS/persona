@@ -1,17 +1,11 @@
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Mvc.Controllers;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Options;
-using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
-using PersonaBackend.Authentication;
-using PersonaBackend.Database;
-using PersonaBackend.Swagger;
-using Swashbuckle.AspNetCore.SwaggerGen;
-using System.Text;
 using Microsoft.EntityFrameworkCore;
-using PersonaBackend.Database.IRepositories;
-using PersonaBackend.Database.Repository;
+using PersonaBackend.Utils;
+using PersonaBackend.Data;
+using Microsoft.Extensions.Options;
+using System.Reflection;
+using Microsoft.AspNetCore.Hosting;
+using Swashbuckle.AspNetCore.Filters;
 
 namespace PersonaBackend
 {
@@ -22,8 +16,7 @@ namespace PersonaBackend
             var builder = WebApplication.CreateBuilder(args);
 
             // Add services to the container.
-
-            builder.Services.AddSingleton<ApiKeyService>();
+            builder.Services.AddSingleton(AWSSecretsManagerService.Instance);
 
             // Add CORS policy
             builder.Services.AddCors(options =>
@@ -41,25 +34,46 @@ namespace PersonaBackend
             builder.Services.AddControllers();
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
-            builder.Services.AddSwaggerGen();
+            builder.Services.AddSwaggerGen(c =>
+            {
+                c.SwaggerDoc("v1", new OpenApiInfo { Title = "PersonaBackend API", Version = "v1" });
+                var xmlFilename = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+                c.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, xmlFilename));
+                c.EnableAnnotations();
+                c.ExampleFilters();
 
-            builder.Services.AddTransient<IConfigureOptions<SwaggerGenOptions>, ConfigureSwaggerOptions>();
+                // Configure Swagger to use x-api-key header
+                c.AddSecurityDefinition("ApiKey", new OpenApiSecurityScheme
+                {
+                    Description = "API Key needed to access the endpoints.",
+                    Name = "x-api-key",
+                    In = ParameterLocation.Header,
+                    Type = SecuritySchemeType.ApiKey,
+                    Scheme = "ApiKeyScheme"
+                });
+                c.OperationFilter<ConditionalOperationFilter>();
+            });
+
+            builder.Services.AddSwaggerExamplesFromAssemblyOf<Program>();
+
+            #region DB setup
 
             DotNetEnv.Env.Load(".env");
-
             var serverName = DotNetEnv.Env.GetString("SERVER_NAME")?.ToString();
             var databaseName = DotNetEnv.Env.GetString("DATABASE_NAME")?.ToString();
             var username = DotNetEnv.Env.GetString("USERNAME")?.ToString();
             var password = DotNetEnv.Env.GetString("PASSWORD")?.ToString();
 
             var connectionString = "Server=" + serverName + ";Port=5432;Database=" + databaseName + ";Username=" + username + ";Password=" + password;
-            builder.Services.AddDbContext<PersonaDatabaseContext>(options =>
+            builder.Services.AddDbContext<Context>(options =>
             {
                 options.UseNpgsql(connectionString ??
                     throw new InvalidOperationException("Connection String not found or invalid"));
             });
 
-            builder.Services.AddScoped<IUserRepository, UserRepository>();
+            //builder.Services.AddScoped<IUserRepository, UserRepository>();
+
+            #endregion DB setup
 
             var app = builder.Build();
 
@@ -74,10 +88,8 @@ namespace PersonaBackend
 
             app.UseCors("OpelCorsa");
 
-            //app.UseAuthentication();
+            app.UseAuthentication();
             app.UseAuthorization();
-
-            app.UseMiddleware<ApiKeyAuthMiddleware>();
 
             app.MapControllers();
 
