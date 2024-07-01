@@ -7,48 +7,56 @@
     <title>Persona Manager</title>
 </head>
 <body>
-    <aside class="zeusFeed">
-        <h3>Zeus Feed</h3>
-        <ul>
-            <li>
-                <h4>Event Title</h4>
-                <p>Time occured: </p>
-            </li>
-            <li>
-                <h4>Event Title</h4>
-                <p>Time occured: </p>
-            </li>
-            <li>
-                <h4>Event Title</h4>
-                <p>Time occured: </p>
-            </li>
-            <li>
-                <h4>Event Title</h4>
-                <p>Time occured: </p>
-            </li>
-            <li>
-                <h4>Event Title</h4>
-                <p>Time occured: </p>
-            </li>
-            <li>
-                <h4>Event Title</h4>
-                <p>Time occured: </p>
-            </li>
-            <li>
-                <h4>Event Title</h4>
-                <p>Time occured: </p>
-            </li>
-        </ul>
-    </aside>
-    <header>
+    <header class="headerItems">
+        <section>
         <h1>Persona Manager <button>Logout</button></h1>
         <h2>Currently viewing Persona ID: None</h2>
         <section>
             <label for="pSearch">Search for a Persona ID: </label>
             <input type="number" id="pSearch" name="pSearch">
             <button id="pSearchButton">Search</button>
-            <button id="pSearchButton">Spawn A Child</button>
         </section>
+    </section>
+    <section>
+        <h1>Persona Endpoints</h1>
+        <ul>
+            <li>
+                <button>Spawn a persona</button>
+            </li>
+            <li>
+                <button>Get list of personas</button>
+            </li>
+            <li>
+                <button>Marry personas</button>
+            </li>
+            <li>
+                <button>Get a Persona</button>
+            </li>
+        </ul>
+    </section>
+    <section>
+        <h1>Economy Endpoints</h1>
+        <ul class="endpointList">
+            <li>
+                <button>Send persona to doctor</button>
+            </li>
+            <li>
+                <button>Persona buy food</button>
+            </li>
+            <li>
+                <button>Persona get job</button>
+            </li>
+            <li>
+                <button>Persona buy electronics</button>
+            </li>
+            <li>
+                <button>Persona buy a stock</button>
+            </li>
+            <li>
+                <button>Persona sell a stock</button>
+            </li>
+        </ul>
+    </section>
     </header>
     <section>
         <h2>Persona Details</h2>
@@ -233,57 +241,6 @@
         </ul>
     </section>
     <section>
-        <h2>Diseases for Persona 0</h2>
-        <button>Add a disease</button>
-        <ul class="personaDetailsList">
-            <li>
-                <article>
-                    <h3>
-                        Typhoid Fever
-                    </h3>
-                    <p>
-                        DiseaseIDValue
-                    </p>
-                    <button>Remove</button>
-                </article>
-            </li>
-            <li>
-                <article>
-                    <h3>
-                        Covid19
-                    </h3>
-                    <p>
-                        DiseaseIDValue
-                    </p>
-                    <button>Remove</button>
-                </article>
-            </li>
-            <li>
-                <article>
-                    <h3>
-                        Polio
-                    </h3>
-                    <p>
-                        DiseaseIDValue
-                    </p>
-                    <button>Remove</button>
-                </article>
-            </li>
-            <li>
-                <article>
-                    <h3>
-                        Ligma :(
-                    </h3>
-                    <p>
-                        DiseaseIDValue
-                    </p>
-                    <button>Remove</button>
-                </article>
-            </li>
-        </ul>
-    </section>
-
-    <section>
         <h2>Personas Stats</h2>
         <ul class="personaDetailsList">
             <li>
@@ -308,6 +265,39 @@
             </li>
         </ul>
     </section>
+    <aside class="zeusFeed">
+        <h3>Zeus Feed</h3>
+        <ul class="zFeedList">
+            <li>
+                <h4>Event Title</h4>
+                <p>Time occured: </p>
+            </li>
+            <li>
+                <h4>Event Title</h4>
+                <p>Time occured: </p>
+            </li>
+            <li>
+                <h4>Event Title</h4>
+                <p>Time occured: </p>
+            </li>
+            <li>
+                <h4>Event Title</h4>
+                <p>Time occured: </p>
+            </li>
+            <li>
+                <h4>Event Title</h4>
+                <p>Time occured: </p>
+            </li>
+            <li>
+                <h4>Event Title</h4>
+                <p>Time occured: </p>
+            </li>
+            <li>
+                <h4>Event Title</h4>
+                <p>Time occured: </p>
+            </li>
+        </ul>
+    </aside>
 </body>
 <script src="index.js"></script>
 </html>

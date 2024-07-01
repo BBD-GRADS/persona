@@ -2,6 +2,7 @@
 
 body{
     font-family: 'Roboto';
+    font-size: 8pt;
 }
 
 ul{
@@ -21,14 +22,30 @@ li{
 }
 
 .zeusFeed{
-    float: right;
-    height: 40rem;
-    width: 15%;
-    overflow-y: auto;
+    height: 10rem;
+    overflow-x: auto;
     background-color: rgb(209, 209, 209);
+}
+
+.zFeedList{
+    display: flex;
+    flex-direction: row;
+}
+
+.headerItems{
+    display: flex;
+}
+
+.headerItems section{
+    padding: 1%;
 }
 
 
 .error{
     color: red;
+}
+
+.endpointList{
+    display: flex;
+    flex-wrap: wrap;
 }
