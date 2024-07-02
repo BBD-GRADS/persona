@@ -1,0 +1,67 @@
+name: C# API DEPLOY
+on:
+  push:
+    branches: [ "testing_api_deploy" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build_api:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Set up .NET Core SDK
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: 8.0.x # Change this to your desired .NET Core version
+
+      - name: Publish API
+        env:
+          GPT_API_KEY: ${{ secrets.GPT_API_KEY}}
+        run: |
+          cd ./CodeGenerator/CodeGeneratorAPI
+          dotnet publish -c Release -o Release
+
+      - name: Inject .env files into Releases
+        env:
+          GPT_API_KEY: ${{ secrets.GPT_API_KEY}}
+        run: | 
+          cd ./CodeGenerator/CodeGeneratorAPI/Release
+          echo ""GPT_API_KEY": "${{ secrets.GPT_API_KEY}}"" >> .env
+          echo ""GPT_API_KEY": "${{ secrets.GPT_API_KEY}}"" >> ~/.bashrc
+
+        
+# echo ""githubSecret": "${{ secrets.GITHUBSECRET}}"" >> .env
+# echo ""githubId": "${{ secrets.GITHUBID}}"" >> .env
+
+      - name: Login to DockerHub
+        run: docker login -u ${{secrets.DOCKER_USERNAME}} -p ${{secrets.DOCKER_PASSWORD}}
+      
+      - name: Build & Publish Docker image
+        env:
+          GPT_API_KEY: ${{ secrets.GPT_API_KEY}}
+        run: |
+          cd ./CodeGenerator/CodeGeneratorAPI
+          docker build -t ${{secrets.DB_BUILD_USERNAME}}/csharp-levelup-dockerhub .
+          docker push ${{secrets.DB_BUILD_USERNAME}}/csharp-levelup-dockerhub:latest
+
+  deploy_api:
+    needs: build_api
+    runs-on: self-hosted
+    steps:
+      - name: Pull image from docker
+        env:
+          GPT_API_KEY: ${{ secrets.GPT_API_KEY}}
+        run: sudo docker pull ${{secrets.DB_BUILD_USERNAME}}/csharp-levelup-dockerhub:latest
+      - name: Delete old container
+        env:
+          GPT_API_KEY: ${{ secrets.GPT_API_KEY}}
+        run: sudo docker rm -f csharp-levelup-ec2
+      - name: Run container
+        env:
+          GPT_API_KEY: ${{ secrets.GPT_API_KEY}}
+        run: sudo docker run -e GPT_API_KEY=${{ secrets.GPT_API_KEY }} -d -p 80:8080 --name csharp-levelup-ec2 ${{secrets.DB_BUILD_USERNAME}}/csharp-levelup-dockerhub:latest
