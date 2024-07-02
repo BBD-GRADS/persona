@@ -85,7 +85,7 @@ namespace PersonaBackend.Utils
                     }
                     _dbContext.FoodItems.UpdateRange(persona.FoodInventory);
 
-                    _dbContext.SaveChanges();
+                    //_dbContext.SaveChanges();
                 }
             }
             catch (Exception ex)
@@ -138,7 +138,7 @@ namespace PersonaBackend.Utils
                     int hungerAfterEating = (int)Math.Round(persona.Hunger * 0.25);
                     healthiestFood.Eaten = true;
                     persona.DaysStarving = 0;
-                    _dbContext.FoodItems.Update(healthiestFood);
+                    //_dbContext.FoodItems.Update(healthiestFood);
                 }
                 else
                 {

@@ -55,9 +55,9 @@ namespace PersonaBackend.Controllers
                     }
 
                     persona.Hunger = 100;
-                    _personaService.BuyItems(persona);
-                    _personaService.EatFood(persona);
                     _personaService.UpdatePersonaFoodStorage(persona);
+                    _personaService.EatFood(persona);
+                    _personaService.BuyItems(persona);
                 }
                 _dbContext.UpdateRange(alivePersonas);
                 await _dbContext.SaveChangesAsync();
