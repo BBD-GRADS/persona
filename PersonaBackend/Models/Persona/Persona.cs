@@ -58,8 +58,8 @@ namespace PersonaBackend.Models.Persona
         [ForeignKey("HomeOwningStatusId")]
         public virtual HomeOwningStatus? HomeOwningStatus { get; set; }
 
-        public virtual ICollection<StockItem>? StockInventory { get; set; }
+        public virtual ICollection<StockItem> StockInventory { get; set; } = new HashSet<StockItem>();
 
-        public virtual ICollection<FoodItem>? FoodInventory { get; set; }
+        public virtual ICollection<FoodItem> FoodInventory { get; set; } = new HashSet<FoodItem>();
     }
 }

@@ -34,6 +34,193 @@ namespace PersonaBackend.Controllers
             return StatusCode(500, $"An error occurred: {ex.Message}");
         }
 
+        [HttpPost("checkHealthStatus")] //1
+        public async Task<IActionResult> CheckHealthStatus()
+        {
+            try
+            {
+                var sickPersonas = await _dbContext.Personas
+                    .Where(p => p.Sick && p.Alive)
+                    .ToListAsync();
+
+                foreach (var persona in sickPersonas)
+                {
+                    persona.Alive = false;
+
+                    var eventOccurred = new EventOccurred
+                    {
+                        PersonaId1 = persona.Id,
+                        PersonaId2 = persona.Id,
+                        EventId = (int)EventTypeEnum.Died,
+                        DateOccurred = _chronos.GetCurrentDateString()
+                    };
+
+                    _dbContext.EventsOccurred.Add(eventOccurred);
+                    _dbContext.Personas.Update(persona);
+                    //TODO CALL OTHER APIS for dead event
+                }
+
+                await _dbContext.SaveChangesAsync();
+
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Internal server error: {ex.Message}");
+            }
+        }
+
+        [HttpPost("BuyItems")] //3
+        public async Task<IActionResult> BuyItems()
+        {
+            try
+            {
+                var adultAlivePersonas = await _dbContext.Personas
+                .Where(p => p.Alive && p.Adult)
+                .ToListAsync();
+
+                foreach (var persona in adultAlivePersonas)
+                {
+                    //CALL BANK TODO
+                    //CALL RETAILEr TODO
+                    //Buy some food maybe 3 days?
+
+                    int numberOfFoodItemsToAdd = 3;
+
+                    for (int i = 0; i <= numberOfFoodItemsToAdd; i++)
+                    {
+                        var foodItem = new FoodItem
+                        {
+                            PersonaId = persona.Id,
+                            Eaten = false,
+                            FoodDateBought = _chronos.GetCurrentDateString(),
+                            FoodStoredInElectronic = false,
+                            FoodHealth = 100,
+                        };
+
+                        await _dbContext.FoodItems.AddAsync(foodItem);
+                    }
+                    //calc money left then buy electronics
+                    //CALL retailer TODO
+                    int numberOfElectronicsToAdd = 3;
+
+                    persona.NumElectronicsOwned += numberOfElectronicsToAdd;
+                    _dbContext.Personas.Update(persona);
+                }
+
+                await _dbContext.SaveChangesAsync();
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Internal server error: {ex.Message}");
+            }
+        }
+
+        [HttpPost("UpdateFoodStorage")]
+        public async Task<IActionResult> UpdateFoodStorage()
+        {
+            try
+            {
+                var adultAlivePersonas = await _dbContext.Personas
+                    .Where(p => p.Alive && p.Adult)
+                    .Include(p => p.FoodInventory)
+                    .ToListAsync();
+
+                foreach (var persona in adultAlivePersonas)
+                {
+                    int numElectronicsOwned = persona.NumElectronicsOwned;
+                    int foodItemsStoredInElectronic = persona.FoodInventory.Count(f => f.FoodStoredInElectronic);
+
+                    if (persona.FoodInventory.Count > 0)
+                    {
+                        foreach (var foodItem in persona.FoodInventory)
+                        {
+                            if (foodItem.FoodStoredInElectronic)
+                            {
+                                continue; // Skip already stored items
+                            }
+
+                            if (foodItemsStoredInElectronic < numElectronicsOwned)
+                            {
+                                // Store food item in electronics
+                                foodItem.FoodStoredInElectronic = true;
+                                foodItemsStoredInElectronic++;
+                            }
+                            else
+                            {
+                                // Store food item normally
+                                foodItem.FoodStoredInElectronic = false;
+                            }
+
+                            _dbContext.FoodItems.Update(foodItem);
+                        }
+                    }
+                }
+
+                // Save changes to the database
+                await _dbContext.SaveChangesAsync();
+
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Internal server error: {ex.Message}");
+            }
+        }
+
+        [HttpDelete("removeOldFood")]//2
+        public async Task<IActionResult> removeOldFood()
+        {
+            try
+            {
+                // Delete eaten food and spoiled food items
+                var eatenFoodItems = await _dbContext.FoodItems
+                    .Where(f => f.Eaten || f.FoodHealth == 0)
+                    .ToListAsync();
+                _dbContext.FoodItems.RemoveRange(eatenFoodItems);
+
+                await _dbContext.SaveChangesAsync();
+
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Internal server error: {ex.Message}");
+            }
+        }
+
+        [HttpPost("updateFood")]//5
+        public async Task<IActionResult> UpdateFood()
+        {
+            try
+            {
+                var foodItems = await _dbContext.FoodItems
+                    .Where(f => !f.Eaten && f.FoodHealth > 0)
+                    .ToListAsync();
+
+                foreach (var foodItem in foodItems)
+                {
+                    var ageInDays = _chronos.getAge(foodItem.FoodDateBought);
+
+                    var maxDaysBeforeExpiry = foodItem.FoodStoredInElectronic ? 5 : 3;
+                    var healthDecreasePerDay = 100 / maxDaysBeforeExpiry;
+
+                    foodItem.FoodHealth = Math.Max(0, foodItem.FoodHealth - (ageInDays * healthDecreasePerDay));
+
+                    _dbContext.FoodItems.Update(foodItem);
+                }
+
+                await _dbContext.SaveChangesAsync();
+
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Internal server error: {ex.Message}");
+            }
+        }
+
         [HttpPost("updateToAdult")]
         public async Task<IActionResult> UpdateToAdult()
         {
@@ -77,28 +264,15 @@ namespace PersonaBackend.Controllers
             }
         }
 
-        [HttpPost("updateFoodHealth")]
-        public async Task<IActionResult> UpdateFoodHealth()
+        [HttpPost("EatFood")]
+        public async Task<IActionResult> EatFood()
         {
             try
             {
-                var foodItems = await _dbContext.FoodItems
-                    .Where(f => !f.Eaten && f.FoodHealth > 0)
-                    .ToListAsync();
-
-                foreach (var foodItem in foodItems)
-                {
-                    var ageInDays = _chronos.getAge(foodItem.FoodDateBought);
-
-                    var maxDaysBeforeExpiry = foodItem.FoodStoredInElectronic ? 5 : 3;
-                    var healthDecreasePerDay = 100 / maxDaysBeforeExpiry;
-
-                    foodItem.FoodHealth = Math.Max(0, foodItem.FoodHealth - (ageInDays * healthDecreasePerDay));
-
-                    _dbContext.FoodItems.Update(foodItem);
-                }
-
-                await _dbContext.SaveChangesAsync();
+                //for loop adults and not dead personas
+                //get money from bank CALL API
+                //BUY food and electronics
+                //check if can store food
 
                 return Ok();
             }
