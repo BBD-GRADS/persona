@@ -1,17 +1,12 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using PersonaBackend.Authentication;
 using PersonaBackend.Data;
 using PersonaBackend.Models.examples;
-using PersonaBackend.Models.HandOfZeus;
 using PersonaBackend.Models.Persona;
 using PersonaBackend.Models.Persona.PersonaRequests;
 using PersonaBackend.Models.Responses;
-using Swashbuckle.AspNetCore.Annotations;
+using PersonaBackend.Utils;
 using Swashbuckle.AspNetCore.Filters;
-using System;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace PersonaBackend.Controllers
 {
@@ -20,10 +15,14 @@ namespace PersonaBackend.Controllers
     public class PersonaController : ControllerBase
     {
         private readonly Context _dbContext;
+        private readonly Chronos _chronos;
+        private readonly PersonaService _personaService;
 
-        public PersonaController(Context dbContext)
+        public PersonaController(Context dbContext, Chronos chronos)
         {
             _dbContext = dbContext;
+            _chronos = chronos;
+            _personaService = new PersonaService(dbContext, chronos);
         }
 
         private IActionResult HandleException(Exception ex)
@@ -31,12 +30,51 @@ namespace PersonaBackend.Controllers
             return StatusCode(500, $"An error occurred: {ex.Message}");
         }
 
+        [HttpPost("updatePersonaEvent")] //2
+        public async Task<IActionResult> updatePersonaEvent()
+        {
+            try
+            {
+                var alivePersonas = await _dbContext.Personas
+                    .Where(p => p.Alive)
+                    .Include(p => p.FoodInventory)
+                    .ToListAsync();
+
+                foreach (var persona in alivePersonas)
+                {
+                    var died = _personaService.CheckIfDie(persona);
+                    if (died)
+                    {
+                        continue;
+                    }
+
+                    if (!persona.Adult)
+                    {
+                        _personaService.UpdateToAdult(persona);
+                        continue;
+                    }
+
+                    persona.Hunger = 100;
+                    _personaService.UpdatePersonaFoodStorage(persona);
+                    _personaService.EatFood(persona);
+                    _personaService.BuyItems(persona);
+                }
+                _dbContext.UpdateRange(alivePersonas);
+                await _dbContext.SaveChangesAsync();
+
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Internal server error: {ex.Message}");
+            }
+        }
+
         /// <summary>
         /// Gets persona's info by ID.
         /// </summary>
         [HttpGet("{personaId}")]
         [ProducesResponseType(typeof(ApiResponse<Persona>), 200)]
-        //[ApiKeyAuthFilter("HandOfZeus")]
         public async Task<IActionResult> GetPersonaById(long personaId)
         {
             try
@@ -160,7 +198,6 @@ namespace PersonaBackend.Controllers
         [HttpGet("hasDied")]
         [ProducesResponseType(typeof(ApiResponse<PersonaIdList>), 200)]
         [SwaggerResponseExample(200, typeof(ApiResponsePersonaIdListEmptyExample))]
-        //[ApiKeyAuthFilter("HandOfZeus")]
         public async Task<IActionResult> HasDied(string startDate, string endDate = null)
         {
             try
@@ -171,7 +208,7 @@ namespace PersonaBackend.Controllers
                 }
 
                 var diedPersonas = await _dbContext.EventsOccurred
-                    .Where(e => e.EventType.EventName == "death" && DateTime.Parse(e.DateOccurred) >= DateTime.Parse(startDate) && DateTime.Parse(e.DateOccurred) <= DateTime.Parse(endDate))
+                    .Where(e => e.EventId == (int)EventTypeEnum.Died && DateTime.Parse(e.DateOccurred) >= DateTime.Parse(startDate) && DateTime.Parse(e.DateOccurred) <= DateTime.Parse(endDate))
                     .Select(e => e.PersonaId1)
                     .ToListAsync();
 
@@ -196,7 +233,6 @@ namespace PersonaBackend.Controllers
         [HttpGet("becameAdult")]
         [ProducesResponseType(typeof(ApiResponse<PersonaIdList>), 200)]
         [SwaggerResponseExample(200, typeof(ApiResponsePersonaIdListEmptyExample))]
-        //[ApiKeyAuthFilter("HandOfZeus")]
         public async Task<IActionResult> BecameAdult(string startDate, string endDate = null)
         {
             try
@@ -207,7 +243,7 @@ namespace PersonaBackend.Controllers
                 }
 
                 var adultPersonas = await _dbContext.EventsOccurred
-                    .Where(e => e.EventType.EventName == "adult" && DateTime.Parse(e.DateOccurred) >= DateTime.Parse(startDate) && DateTime.Parse(e.DateOccurred) <= DateTime.Parse(endDate))
+                    .Where(e => e.EventId == (int)EventTypeEnum.Adult && DateTime.Parse(e.DateOccurred) >= DateTime.Parse(startDate) && DateTime.Parse(e.DateOccurred) <= DateTime.Parse(endDate))
                     .Select(e => e.PersonaId1)
                     .ToListAsync();
 
@@ -232,7 +268,6 @@ namespace PersonaBackend.Controllers
         [HttpGet("gotMarried")]
         [ProducesResponseType(typeof(ApiResponse<PersonaMarriageList>), 200)]
         [SwaggerResponseExample(200, typeof(ApiResponseMarriedPairExample))]
-        //[ApiKeyAuthFilter("HandOfZeus")]
         public async Task<IActionResult> GotMarried(string startDate, string endDate = null)
         {
             try
@@ -243,7 +278,7 @@ namespace PersonaBackend.Controllers
                 }
 
                 var marriedPersonas = await _dbContext.EventsOccurred
-                    .Where(e => e.EventType.EventName == "married" && DateTime.Parse(e.DateOccurred) >= DateTime.Parse(startDate) && DateTime.Parse(e.DateOccurred) <= DateTime.Parse(endDate))
+                    .Where(e => e.EventId == (int)EventTypeEnum.Married && DateTime.Parse(e.DateOccurred) >= DateTime.Parse(startDate) && DateTime.Parse(e.DateOccurred) <= DateTime.Parse(endDate))
                     .Select(e => new PersonaMarriagePair
                     {
                         FirstPerson = e.PersonaId1,
@@ -275,7 +310,6 @@ namespace PersonaBackend.Controllers
         [HttpGet("hadChild")]
         [ProducesResponseType(typeof(ApiResponse<ParentChildList>), 200)]
         [SwaggerResponseExample(200, typeof(ApiResponseChildPairExample))]
-        //[ApiKeyAuthFilter("HandOfZeus")]
         public async Task<IActionResult> HadChild(string startDate, string endDate = null)
         {
             try
@@ -286,7 +320,7 @@ namespace PersonaBackend.Controllers
                 }
 
                 var parentChildPairs = await _dbContext.EventsOccurred
-                    .Where(e => e.EventType.EventName == "born" && DateTime.Parse(e.DateOccurred) >= DateTime.Parse(startDate) && DateTime.Parse(e.DateOccurred) <= DateTime.Parse(endDate))
+                    .Where(e => e.EventId == (int)EventTypeEnum.Born && DateTime.Parse(e.DateOccurred) >= DateTime.Parse(startDate) && DateTime.Parse(e.DateOccurred) <= DateTime.Parse(endDate))
                     .Select(e => new ParentChildPair
                     {
                         ParentId = e.PersonaId1,

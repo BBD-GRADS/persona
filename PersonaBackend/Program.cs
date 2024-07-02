@@ -6,6 +6,7 @@ using Microsoft.Extensions.Options;
 using System.Reflection;
 using Microsoft.AspNetCore.Hosting;
 using Swashbuckle.AspNetCore.Filters;
+using Npgsql;
 
 namespace PersonaBackend
 {
@@ -16,7 +17,8 @@ namespace PersonaBackend
             var builder = WebApplication.CreateBuilder(args);
 
             // Add services to the container.
-            builder.Services.AddSingleton(AWSSecretsManagerService.Instance);
+            builder.Services.AddSingleton(AWSManagerService.Instance);
+            builder.Services.AddSingleton(Chronos.Instance);
 
             // Add CORS policy
             builder.Services.AddCors(options =>
@@ -59,19 +61,17 @@ namespace PersonaBackend
             #region DB setup
 
             DotNetEnv.Env.Load(".env");
-            var serverName = DotNetEnv.Env.GetString("SERVER_NAME")?.ToString();
+            var host = DotNetEnv.Env.GetString("HOST")?.ToString();
             var databaseName = DotNetEnv.Env.GetString("DATABASE_NAME")?.ToString();
             var username = DotNetEnv.Env.GetString("USERNAME")?.ToString();
             var password = DotNetEnv.Env.GetString("PASSWORD")?.ToString();
 
-            var connectionString = "Server=" + serverName + ";Port=5432;Database=" + databaseName + ";Username=" + username + ";Password=" + password;
+            var connectionString = $"Host={host};Port=5432;Database={databaseName};Username={username};Password={password}";
             builder.Services.AddDbContext<Context>(options =>
             {
                 options.UseNpgsql(connectionString ??
                     throw new InvalidOperationException("Connection String not found or invalid"));
             });
-
-            //builder.Services.AddScoped<IUserRepository, UserRepository>();
 
             #endregion DB setup
 

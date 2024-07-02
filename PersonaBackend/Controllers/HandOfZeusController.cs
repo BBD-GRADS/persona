@@ -4,8 +4,10 @@ using Microsoft.EntityFrameworkCore;
 using PersonaBackend.Authentication;
 using PersonaBackend.Data;
 using PersonaBackend.Models.HandOfZeus;
+using PersonaBackend.Models.Persona;
 using PersonaBackend.Models.Persona.PersonaRequests;
 using PersonaBackend.Models.Responses;
+using PersonaBackend.Utils;
 using Swashbuckle.AspNetCore.Annotations;
 using System;
 using System.Linq;
@@ -15,23 +17,92 @@ namespace PersonaBackend.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    //[ApiKeyAuthFilter("HandOfZeus")]
     public class HandOfZeusController : ControllerBase
     {
         private readonly Context _dbContext;
+        private readonly Chronos _chronos;
+        private readonly AWSManagerService _awsManagerService;
 
-        public HandOfZeusController(Context dbContext)
+        public HandOfZeusController(Context dbContext, Chronos chronos, AWSManagerService awsManagerService)
         {
             _dbContext = dbContext;
+            _chronos = chronos;
+            _awsManagerService = awsManagerService;
         }
 
         [HttpPost("startSimulation")]
         [ProducesResponseType(typeof(ApiResponse<bool>), StatusCodes.Status200OK)]
         [SwaggerResponse(StatusCodes.Status200OK, "Simulation started successfully", typeof(ApiResponse<bool>))]
-        public IActionResult StartSimulation([FromBody] StartSimulationRequest request)
+        public async Task<IActionResult> StartSimulation([FromBody] StartSimulationRequest request)
         {
-            // Your simulation logic here
-            return Ok(new ApiResponse<bool> { Data = true, Message = "Simulation started successfully" });
+            try
+            {
+                await DeleteAllDataAsync();
+
+                //TODO check  request data VALIDATE
+                _chronos.SetSimulationStartDate(request.StartDate);
+                //await _awsManagerService.PutParameterAsync("/simulation/starting_date", request.StartDate);
+
+                //at the end first.
+                //await _awsManagerService.EnableSchedule("sim-schedule", true);
+
+                if (request.NumberOfPersonas < 1 || request.NumberOfPersonas > 50000)
+                {
+                    return BadRequest(new ApiResponse<bool> { Data = false, Message = "Invalid request. The number of personas must be between 1 and 50,000." });
+                }
+
+                var personas = new List<Persona>();
+
+                for (int i = 0; i < request.NumberOfPersonas; i++)
+                {
+                    var persona = new Persona
+                    {
+                        NextOfKinId = null,
+                        PartnerId = null,
+                        ParentId = null,
+                        BirthFormatTime = request.StartDate,
+                        Hunger = 0,
+                        Health = 100,
+                        Alive = true,
+                        Sick = false,
+                        Adult = true,
+                        NumElectronicsOwned = 0,
+                        //HomeOwningStatusId = 0, //default? TODO make enum add a status here later
+                    };
+
+                    personas.Add(persona);
+                    //for each
+                    //TODO call retail bank to open account - deposit 1000 starting
+                    //TODO call labour people to get job
+                    //TODO call insure LIFE and HEALTH
+                    //TODO get house rent/buy - see salary?
+                    //TODO buy first food and electronic we know we have 1000
+                }
+
+                await _dbContext.Personas.AddRangeAsync(personas);
+                await _dbContext.SaveChangesAsync();
+
+                return Ok(new ApiResponse<bool> { Data = true, Message = $"Simulation started successfully with {request.NumberOfPersonas} persona records" });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Exception occurred: {ex}");
+                return StatusCode(StatusCodes.Status500InternalServerError, new ApiResponse<bool> { Data = false, Message = "An error occurred while starting the simulation." });
+            }
+        }
+
+        private async Task DeleteAllDataAsync()
+        {
+            _dbContext.StockItems.RemoveRange(_dbContext.StockItems);
+            _dbContext.FoodItems.RemoveRange(_dbContext.FoodItems);
+            _dbContext.EventsOccurred.RemoveRange(_dbContext.EventsOccurred);
+            _dbContext.Personas.RemoveRange(_dbContext.Personas);
+
+            //_dbContext.Businesses.RemoveRange(_dbContext.Businesses);
+            //_dbContext.HomeOwningStatuses.RemoveRange(_dbContext.HomeOwningStatuses);
+            //_dbContext.EventTypes.RemoveRange(_dbContext.EventTypes);
+
+            await _dbContext.SaveChangesAsync();
         }
 
         [HttpPost("givePersonasSickness")]
