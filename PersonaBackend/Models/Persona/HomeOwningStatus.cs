@@ -7,6 +7,9 @@ namespace PersonaBackend.Models.Persona
     {
         [Key]
         public int Id { get; set; }
-        public string? status_description { get; set; }
+
+        [Required]
+        [StringLength(20)]
+        public string StatusDescription { get; set; }
     }
 }

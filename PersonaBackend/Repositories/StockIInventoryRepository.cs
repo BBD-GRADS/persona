@@ -86,25 +86,5 @@ namespace PersonaBackend.Repositories
             Dispose(true);
             GC.SuppressFinalize(this);
         }
-
-        public StockInventory GetByIdWithIncludes(int id)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<StockInventory> GetByIdWithIncludesAsync(int id)
-        {
-            throw new NotImplementedException();
-        }
-
-        public StockInventory Select(Expression<Func<StockInventory, bool>> predicate)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<StockInventory> SelectAsync(Expression<Func<StockInventory, bool>> predicate)
-        {
-            throw new NotImplementedException();
-        }
     }
 }

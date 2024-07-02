@@ -86,25 +86,5 @@ namespace PersonaBackend.Repositories
             Dispose(true);
             GC.SuppressFinalize(this);
         }
-
-        public HomeOwningStatus GetByIdWithIncludes(int id)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<HomeOwningStatus> GetByIdWithIncludesAsync(int id)
-        {
-            throw new NotImplementedException();
-        }
-
-        public HomeOwningStatus Select(Expression<Func<HomeOwningStatus, bool>> predicate)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<HomeOwningStatus> SelectAsync(Expression<Func<HomeOwningStatus, bool>> predicate)
-        {
-            throw new NotImplementedException();
-        }
     }
 }

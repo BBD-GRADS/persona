@@ -86,25 +86,5 @@ namespace PersonaBackend.Repositories
             Dispose(true);
             GC.SuppressFinalize(this);
         }
-
-        public Business GetByIdWithIncludes(int id)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<Business> GetByIdWithIncludesAsync(int id)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Business Select(Expression<Func<Business, bool>> predicate)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<Business> SelectAsync(Expression<Func<Business, bool>> predicate)
-        {
-            throw new NotImplementedException();
-        }
     }
 }

@@ -88,25 +88,5 @@ namespace PersonaBackend.Repositories
             Dispose(true);
             GC.SuppressFinalize(this);
         }
-
-        public Persona GetByIdWithIncludes(int id)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<Persona> GetByIdWithIncludesAsync(int id)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Persona Select(Expression<Func<Persona, bool>> predicate)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<Persona> SelectAsync(Expression<Func<Persona, bool>> predicate)
-        {
-            throw new NotImplementedException();
-        }
     }
 }
