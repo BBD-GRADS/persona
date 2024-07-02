@@ -24,13 +24,6 @@ namespace PersonaBackend.Data
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            modelBuilder.Entity<EventType>().HasData(
-                new EventType { Id = 1, EventName = (int)EventTypeEnum.Married },
-                new EventType { Id = 2, EventName = (int)EventTypeEnum.Died },
-                new EventType { Id = 3, EventName = (int)EventTypeEnum.Adult },
-                new EventType { Id = 4, EventName = (int)EventTypeEnum.Born }
-            );
-
             modelBuilder.Entity<Persona>()
                 .HasOne(p => p.NextOfKin)
                 .WithMany()

@@ -13,14 +13,14 @@ namespace PersonaBackend.Models.Persona
         [Required]
         [StringLength(8)]
         [Column("event_name")]
-        public int EventName { get; set; }
+        public string EventName { get; set; }
     }
 
     public enum EventTypeEnum
     {
-        Married,
-        Died,
-        Adult,
-        Born
+        Married = 1,
+        Died = 2,
+        Adult = 3,
+        Born = 4
     }
 }

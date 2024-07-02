@@ -47,21 +47,57 @@ namespace PersonaBackend.Controllers
                 {
                     var ageInDays = _chronos.getAge(persona.BirthFormatTime);
 
-                    //if (ageInDays >= 6 * 30)
+                    //if (ageInDays >= 6 * 30) TODO replace
                     if (ageInDays >= 2)
-
                     {
                         persona.Adult = true;
 
                         var eventOccurred = new EventOccurred
                         {
                             PersonaId1 = persona.Id,
+                            PersonaId2 = persona.Id,
                             EventId = (int)EventTypeEnum.Adult,
                             DateOccurred = _chronos.GetCurrentDateString()
                         };
-                        //TODO call needed APIs
+
+                        // Save event to database
+                        _dbContext.EventsOccurred.Add(eventOccurred);
                     }
                 }
+
+                await _dbContext.SaveChangesAsync();
+
+                // TODO: Call needed APIs
+
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Internal server error: {ex.Message}");
+            }
+        }
+
+        [HttpPost("updateFoodHealth")]
+        public async Task<IActionResult> UpdateFoodHealth()
+        {
+            try
+            {
+                var foodItems = await _dbContext.FoodItems
+                    .Where(f => !f.Eaten && f.FoodHealth > 0)
+                    .ToListAsync();
+
+                foreach (var foodItem in foodItems)
+                {
+                    var ageInDays = _chronos.getAge(foodItem.FoodDateBought);
+
+                    var maxDaysBeforeExpiry = foodItem.FoodStoredInElectronic ? 5 : 3;
+                    var healthDecreasePerDay = 100 / maxDaysBeforeExpiry;
+
+                    foodItem.FoodHealth = Math.Max(0, foodItem.FoodHealth - (ageInDays * healthDecreasePerDay));
+
+                    _dbContext.FoodItems.Update(foodItem);
+                }
+
                 await _dbContext.SaveChangesAsync();
 
                 return Ok();
@@ -210,7 +246,7 @@ namespace PersonaBackend.Controllers
                 }
 
                 var diedPersonas = await _dbContext.EventsOccurred
-                    .Where(e => e.EventType.EventName == (int)EventTypeEnum.Died && DateTime.Parse(e.DateOccurred) >= DateTime.Parse(startDate) && DateTime.Parse(e.DateOccurred) <= DateTime.Parse(endDate))
+                    .Where(e => e.EventId == (int)EventTypeEnum.Died && DateTime.Parse(e.DateOccurred) >= DateTime.Parse(startDate) && DateTime.Parse(e.DateOccurred) <= DateTime.Parse(endDate))
                     .Select(e => e.PersonaId1)
                     .ToListAsync();
 
@@ -245,7 +281,7 @@ namespace PersonaBackend.Controllers
                 }
 
                 var adultPersonas = await _dbContext.EventsOccurred
-                    .Where(e => e.EventType.EventName == (int)EventTypeEnum.Adult && DateTime.Parse(e.DateOccurred) >= DateTime.Parse(startDate) && DateTime.Parse(e.DateOccurred) <= DateTime.Parse(endDate))
+                    .Where(e => e.EventId == (int)EventTypeEnum.Adult && DateTime.Parse(e.DateOccurred) >= DateTime.Parse(startDate) && DateTime.Parse(e.DateOccurred) <= DateTime.Parse(endDate))
                     .Select(e => e.PersonaId1)
                     .ToListAsync();
 
@@ -280,7 +316,7 @@ namespace PersonaBackend.Controllers
                 }
 
                 var marriedPersonas = await _dbContext.EventsOccurred
-                    .Where(e => e.EventType.EventName == (int)EventTypeEnum.Married && DateTime.Parse(e.DateOccurred) >= DateTime.Parse(startDate) && DateTime.Parse(e.DateOccurred) <= DateTime.Parse(endDate))
+                    .Where(e => e.EventId == (int)EventTypeEnum.Married && DateTime.Parse(e.DateOccurred) >= DateTime.Parse(startDate) && DateTime.Parse(e.DateOccurred) <= DateTime.Parse(endDate))
                     .Select(e => new PersonaMarriagePair
                     {
                         FirstPerson = e.PersonaId1,
@@ -322,7 +358,7 @@ namespace PersonaBackend.Controllers
                 }
 
                 var parentChildPairs = await _dbContext.EventsOccurred
-                    .Where(e => e.EventType.EventName == (int)EventTypeEnum.Born && DateTime.Parse(e.DateOccurred) >= DateTime.Parse(startDate) && DateTime.Parse(e.DateOccurred) <= DateTime.Parse(endDate))
+                    .Where(e => e.EventId == (int)EventTypeEnum.Born && DateTime.Parse(e.DateOccurred) >= DateTime.Parse(startDate) && DateTime.Parse(e.DateOccurred) <= DateTime.Parse(endDate))
                     .Select(e => new ParentChildPair
                     {
                         ParentId = e.PersonaId1,

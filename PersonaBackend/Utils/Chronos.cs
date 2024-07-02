@@ -33,13 +33,13 @@ namespace PersonaBackend.Utils
             var dateParts = date.Split('|');
             var currentParts = currentDate.Split('|');
 
-            int birthDay = int.Parse(dateParts[0]);
-            int birthMonth = int.Parse(dateParts[1]);
-            int birthYear = int.Parse(dateParts[2]);
+            int birthYear = int.Parse(dateParts[0]);
+            int birthMonth = int.Parse(dateParts[1]); //TODO get a yy/m/d class?
+            int birthDay = int.Parse(dateParts[2]);
 
-            int currentDay = int.Parse(currentParts[0]);
+            int currentYear = int.Parse(currentParts[0]);
             int currentMonth = int.Parse(currentParts[1]);
-            int currentYear = int.Parse(currentParts[2]);
+            int currentDay = int.Parse(currentParts[2]);
 
             // Calculate total days since birth date and current date
             int totalDaysBirth = birthYear * 360 + birthMonth * 30 + birthDay; // Assuming each year has 360 days and each month has 30 days
