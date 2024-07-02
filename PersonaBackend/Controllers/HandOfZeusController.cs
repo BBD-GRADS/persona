@@ -65,7 +65,7 @@ namespace PersonaBackend.Controllers
                         Health = 100,
                         Alive = true,
                         Sick = false,
-                        Adult = false,
+                        Adult = true,
                         NumElectronicsOwned = 0,
                         //HomeOwningStatusId = 0, //default? TODO make enum add a status here later
                     };

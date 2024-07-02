@@ -6,6 +6,7 @@ namespace PersonaBackend.Models.Persona
     public class EventOccurred
     {
         [Key]
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         [Column("id")]
         public long Id { get; set; }
 

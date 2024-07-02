@@ -55,7 +55,7 @@ namespace PersonaBackend.Controllers
                     var maxDaysBeforeExpiry = foodItem.FoodStoredInElectronic ? 5 : 3;
                     var healthDecreasePerDay = 100 / maxDaysBeforeExpiry;
 
-                    foodItem.FoodHealth = Math.Max(0, foodItem.FoodHealth - (ageInDays * healthDecreasePerDay));
+                    foodItem.FoodHealth = Math.Max(0, 100 - (ageInDays * healthDecreasePerDay));
 
                     _dbContext.FoodItems.Update(foodItem);
                 }

@@ -42,7 +42,7 @@ namespace PersonaBackend.Controllers
 
                 foreach (var persona in alivePersonas)
                 {
-                    var died = _personaService.CheckHealthStatus(persona);
+                    var died = _personaService.CheckIfDie(persona);
                     if (died)
                     {
                         continue;
@@ -59,7 +59,7 @@ namespace PersonaBackend.Controllers
                     _personaService.EatFood(persona);
                     _personaService.UpdatePersonaFoodStorage(persona);
                 }
-
+                _dbContext.UpdateRange(alivePersonas);
                 await _dbContext.SaveChangesAsync();
 
                 return Ok();

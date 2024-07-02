@@ -19,7 +19,10 @@ namespace PersonaBackend.Utils
         {
             try
             {
-                int numberOfFoodItemsToAdd = 3;
+                //TODO: get bank balance
+                //talk to retailer
+                int numberOfFoodItemsToAdd = 2;
+                List<FoodItem> foodItemsToAdd = new List<FoodItem>();
 
                 for (int i = 0; i < numberOfFoodItemsToAdd; i++)
                 {
@@ -32,17 +35,25 @@ namespace PersonaBackend.Utils
                         FoodHealth = 100,
                     };
 
-                    _dbContext.FoodItems.Add(foodItem);
+                    foodItemsToAdd.Add(foodItem);
                 }
 
-                int numberOfElectronicsToAdd = 3;
+                _dbContext.FoodItems.AddRange(foodItemsToAdd);
+
+                //TODO: Calc left over money buy electronics
+                //talk to retailer
+
+                int numberOfElectronicsToAdd = 1;
                 persona.NumElectronicsOwned += numberOfElectronicsToAdd;
 
                 _dbContext.Personas.Update(persona);
+
+                //_dbContext.SaveChanges();
             }
             catch (Exception ex)
             {
-                //throw;
+                // Handle exceptions or log errors
+                // throw; // Uncomment if you want to rethrow the exception
             }
         }
 
@@ -71,9 +82,10 @@ namespace PersonaBackend.Utils
                         {
                             foodItem.FoodStoredInElectronic = false;
                         }
-
-                        _dbContext.FoodItems.Update(foodItem);
                     }
+                    _dbContext.FoodItems.UpdateRange(persona.FoodInventory);
+
+                    _dbContext.SaveChanges();
                 }
             }
             catch (Exception ex)
@@ -82,7 +94,7 @@ namespace PersonaBackend.Utils
             }
         }
 
-        public bool CheckHealthStatus(Persona persona)
+        public bool CheckIfDie(Persona persona)
         {
             var died = false;
             try
@@ -102,6 +114,7 @@ namespace PersonaBackend.Utils
 
                     _dbContext.EventsOccurred.Add(eventOccurred);
                     _dbContext.Personas.Update(persona);
+                    //_dbContext.SaveChanges();
                 }
                 return died;
             }
@@ -124,9 +137,15 @@ namespace PersonaBackend.Utils
                 {
                     int hungerAfterEating = (int)Math.Round(persona.Hunger * 0.25);
                     healthiestFood.Eaten = true;
-                    _dbContext.Personas.Update(persona);
+                    persona.DaysStarving = 0;
                     _dbContext.FoodItems.Update(healthiestFood);
                 }
+                else
+                {
+                    persona.DaysStarving++;
+                }
+                _dbContext.Personas.Update(persona);
+                //_dbContext.SaveChanges();
             }
             catch (Exception ex)
             {
@@ -155,6 +174,7 @@ namespace PersonaBackend.Utils
 
                     _dbContext.EventsOccurred.Add(eventOccurred);
                     _dbContext.Personas.Update(persona); // Update persona in DbContext
+                                                         // _dbContext.SaveChanges();
                 }
             }
             catch (Exception ex)
