@@ -1,4 +1,6 @@
-﻿using PersonaBackend.Interfaces;
+﻿using Microsoft.EntityFrameworkCore;
+using PersonaBackend.Interfaces;
+using PersonaBackend.Utils;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
