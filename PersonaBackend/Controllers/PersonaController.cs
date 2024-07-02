@@ -11,8 +11,11 @@ using PersonaBackend.Utils;
 using Swashbuckle.AspNetCore.Annotations;
 using Swashbuckle.AspNetCore.Filters;
 using System;
+using System.Buffers.Text;
 using System.Linq;
+using System.Numerics;
 using System.Threading.Tasks;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace PersonaBackend.Controllers
 {
@@ -34,18 +37,93 @@ namespace PersonaBackend.Controllers
             return StatusCode(500, $"An error occurred: {ex.Message}");
         }
 
-        [HttpPost("checkHealthStatus")] //1
-        public async Task<IActionResult> CheckHealthStatus()
+        public void BuyItems(Persona persona)
         {
             try
             {
-                var sickPersonas = await _dbContext.Personas
-                    .Where(p => p.Sick && p.Alive)
-                    .ToListAsync();
+                // TODO: Implement API calls to bank and retailer
+                // Buy # depending on money ?
+                int numberOfFoodItemsToAdd = 3;
 
-                foreach (var persona in sickPersonas)
+                for (int i = 0; i < numberOfFoodItemsToAdd; i++)
                 {
-                    persona.Alive = false;
+                    var foodItem = new FoodItem
+                    {
+                        PersonaId = persona.Id,
+                        Eaten = false,
+                        FoodDateBought = _chronos.GetCurrentDateString(),
+                        FoodStoredInElectronic = false,
+                        FoodHealth = 100,
+                    };
+
+                    _dbContext.FoodItems.Add(foodItem);
+                }
+
+                // Calculate money left after buying food items TODO
+                // Buy electronics
+                int numberOfElectronicsToAdd = 3;
+                persona.NumElectronicsOwned += numberOfElectronicsToAdd;
+
+                // Update persona in DbContext
+                _dbContext.Personas.Update(persona);
+            }
+            catch (Exception ex)
+            {
+                throw;
+            }
+        }
+
+        public void UpdatePersonaFoodStorage(Persona persona)
+        {
+            try
+            {
+                int numElectronicsOwned = persona.NumElectronicsOwned;
+                int foodItemsStoredInElectronic = persona.FoodInventory.Count(f => f.FoodStoredInElectronic);
+
+                if (persona.FoodInventory != null && persona.FoodInventory.Any())
+                {
+                    foreach (var foodItem in persona.FoodInventory)
+                    {
+                        if (foodItem.FoodStoredInElectronic)
+                        {
+                            continue; // Skip already stored items
+                        }
+
+                        if (foodItemsStoredInElectronic < numElectronicsOwned)
+                        {
+                            // Store food item in electronics
+                            foodItem.FoodStoredInElectronic = true;
+                            foodItemsStoredInElectronic++;
+                        }
+                        else
+                        {
+                            // Store food item normally
+                            foodItem.FoodStoredInElectronic = false;
+                        }
+
+                        _dbContext.FoodItems.Update(foodItem);
+                    }
+
+                    // Save changes to the database
+                    //await _dbContext.SaveChangesAsync();
+                }
+            }
+            catch (Exception ex)
+            {
+                // Handle exceptions or log errors
+                throw new Exception($"Error updating food storage for persona {persona.Id}: {ex.Message}", ex);
+            }
+        }
+
+        public bool CheckHealthStatus(Persona persona)
+        {
+            var died = false;
+            try
+            {
+                if ((persona.Sick || persona.DaysStarving >= 2) && persona.Alive)
+                {
+                    died = true;
+                    persona.Alive = false; // Mark persona as deceased
 
                     var eventOccurred = new EventOccurred
                     {
@@ -56,159 +134,67 @@ namespace PersonaBackend.Controllers
                     };
 
                     _dbContext.EventsOccurred.Add(eventOccurred);
+
+                    // Optionally: Call other APIs or perform additional actions for a deceased persona
+
                     _dbContext.Personas.Update(persona);
-                    //TODO CALL OTHER APIS for dead event
+
+                    // await _dbContext.SaveChangesAsync();
                 }
-
-                await _dbContext.SaveChangesAsync();
-
-                return Ok();
+                return died;
             }
             catch (Exception ex)
             {
-                return StatusCode(500, $"Internal server error: {ex.Message}");
+                // Handle exceptions or log errors
+                return died;
             }
         }
 
-        [HttpPost("BuyItems")] //3
-        public async Task<IActionResult> BuyItems()
+        public void EatFood(Persona persona)
         {
             try
             {
-                var adultAlivePersonas = await _dbContext.Personas
-                .Where(p => p.Alive && p.Adult)
-                .ToListAsync();
+                var healthiestFood = persona.FoodInventory
+                    .Where(f => !f.Eaten)
+                    .OrderByDescending(f => f.FoodHealth)
+                    .FirstOrDefault();
 
-                foreach (var persona in adultAlivePersonas)
+                if (healthiestFood != null)
                 {
-                    //CALL BANK TODO
-                    //CALL RETAILEr TODO
-                    //Buy some food maybe 3 days?
+                    int hungerAfterEating = (int)Math.Round(persona.Hunger * 0.25);
 
-                    int numberOfFoodItemsToAdd = 3;
-
-                    for (int i = 0; i <= numberOfFoodItemsToAdd; i++)
-                    {
-                        var foodItem = new FoodItem
-                        {
-                            PersonaId = persona.Id,
-                            Eaten = false,
-                            FoodDateBought = _chronos.GetCurrentDateString(),
-                            FoodStoredInElectronic = false,
-                            FoodHealth = 100,
-                        };
-
-                        await _dbContext.FoodItems.AddAsync(foodItem);
-                    }
-                    //calc money left then buy electronics
-                    //CALL retailer TODO
-                    int numberOfElectronicsToAdd = 3;
-
-                    persona.NumElectronicsOwned += numberOfElectronicsToAdd;
+                    healthiestFood.Eaten = true;
                     _dbContext.Personas.Update(persona);
+                    _dbContext.FoodItems.Update(healthiestFood);
                 }
-
-                await _dbContext.SaveChangesAsync();
-                return Ok();
             }
             catch (Exception ex)
             {
-                return StatusCode(500, $"Internal server error: {ex.Message}");
+                // Handle exceptions or log errors
             }
         }
 
-        [HttpPost("UpdateFoodStorage")]
-        public async Task<IActionResult> UpdateFoodStorage()
+        [HttpPost("updatePersonaEvent")] //2
+        public async Task<IActionResult> updatePersonaEvent() //ran each simulation event
         {
             try
             {
-                var adultAlivePersonas = await _dbContext.Personas
+                var alivePersonas = await _dbContext.Personas
                     .Where(p => p.Alive && p.Adult)
                     .Include(p => p.FoodInventory)
                     .ToListAsync();
 
-                foreach (var persona in adultAlivePersonas)
+                foreach (var persona in alivePersonas)
                 {
-                    int numElectronicsOwned = persona.NumElectronicsOwned;
-                    int foodItemsStoredInElectronic = persona.FoodInventory.Count(f => f.FoodStoredInElectronic);
-
-                    if (persona.FoodInventory.Count > 0)
+                    var died = CheckHealthStatus(persona);
+                    if (died)
                     {
-                        foreach (var foodItem in persona.FoodInventory)
-                        {
-                            if (foodItem.FoodStoredInElectronic)
-                            {
-                                continue; // Skip already stored items
-                            }
-
-                            if (foodItemsStoredInElectronic < numElectronicsOwned)
-                            {
-                                // Store food item in electronics
-                                foodItem.FoodStoredInElectronic = true;
-                                foodItemsStoredInElectronic++;
-                            }
-                            else
-                            {
-                                // Store food item normally
-                                foodItem.FoodStoredInElectronic = false;
-                            }
-
-                            _dbContext.FoodItems.Update(foodItem);
-                        }
+                        continue;
                     }
-                }
-
-                // Save changes to the database
-                await _dbContext.SaveChangesAsync();
-
-                return Ok();
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, $"Internal server error: {ex.Message}");
-            }
-        }
-
-        [HttpDelete("removeOldFood")]//2
-        public async Task<IActionResult> removeOldFood()
-        {
-            try
-            {
-                // Delete eaten food and spoiled food items
-                var eatenFoodItems = await _dbContext.FoodItems
-                    .Where(f => f.Eaten || f.FoodHealth == 0)
-                    .ToListAsync();
-                _dbContext.FoodItems.RemoveRange(eatenFoodItems);
-
-                await _dbContext.SaveChangesAsync();
-
-                return Ok();
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, $"Internal server error: {ex.Message}");
-            }
-        }
-
-        [HttpPost("updateFood")]//5
-        public async Task<IActionResult> UpdateFood()
-        {
-            try
-            {
-                var foodItems = await _dbContext.FoodItems
-                    .Where(f => !f.Eaten && f.FoodHealth > 0)
-                    .ToListAsync();
-
-                foreach (var foodItem in foodItems)
-                {
-                    var ageInDays = _chronos.getAge(foodItem.FoodDateBought);
-
-                    var maxDaysBeforeExpiry = foodItem.FoodStoredInElectronic ? 5 : 3;
-                    var healthDecreasePerDay = 100 / maxDaysBeforeExpiry;
-
-                    foodItem.FoodHealth = Math.Max(0, foodItem.FoodHealth - (ageInDays * healthDecreasePerDay));
-
-                    _dbContext.FoodItems.Update(foodItem);
+                    persona.Hunger = 100;
+                    BuyItems(persona);
+                    EatFood(persona);
+                    UpdatePersonaFoodStorage(persona);
                 }
 
                 await _dbContext.SaveChangesAsync();
@@ -255,24 +241,6 @@ namespace PersonaBackend.Controllers
                 await _dbContext.SaveChangesAsync();
 
                 // TODO: Call needed APIs
-
-                return Ok();
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, $"Internal server error: {ex.Message}");
-            }
-        }
-
-        [HttpPost("EatFood")]
-        public async Task<IActionResult> EatFood()
-        {
-            try
-            {
-                //for loop adults and not dead personas
-                //get money from bank CALL API
-                //BUY food and electronics
-                //check if can store food
 
                 return Ok();
             }

@@ -40,6 +40,9 @@ namespace PersonaBackend.Models.Persona
         [Column("health")]
         public int Health { get; set; }
 
+        [Column("days_starving")]
+        public int DaysStarving { get; set; }
+
         [Column("alive")]
         public bool Alive { get; set; }
 
