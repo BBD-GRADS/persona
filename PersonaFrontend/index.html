@@ -17,230 +17,7 @@
             <button id="pSearchButton">Search</button>
         </section>
     </section>
-    <section>
-        <h1>Persona Endpoints</h1>
-        <ul>
-            <li>
-                <button>Spawn a persona</button>
-            </li>
-            <li>
-                <button>Get list of personas</button>
-            </li>
-            <li>
-                <button>Marry personas</button>
-            </li>
-            <li>
-                <button>Get a Persona</button>
-            </li>
-        </ul>
-    </section>
-    <section>
-        <h1>Economy Endpoints</h1>
-        <ul class="endpointList">
-            <li>
-                <button>Send persona to doctor</button>
-            </li>
-            <li>
-                <button>Persona buy food</button>
-            </li>
-            <li>
-                <button>Persona get job</button>
-            </li>
-            <li>
-                <button>Persona buy electronics</button>
-            </li>
-            <li>
-                <button>Persona buy a stock</button>
-            </li>
-            <li>
-                <button>Persona sell a stock</button>
-            </li>
-        </ul>
-    </section>
-    </header>
-    <section>
-        <h2>Persona Details</h2>
-        <button>Save Edits</button>
-        <ul class="personaDetailsList">
-            <li>
-                <article>
-                    <h3>
-                        Name
-                    </h3>
-                    <p>
-                        FirstName LastName
-                    </p>
-                    <button>Edit</button>
-                </article>
-            </li>
-            <li>
-                <article>
-                    <h3>
-                        Age In Days
-                    </h3>
-                    <p>
-                        AgeValue
-                    </p>
-                    <button>Edit</button>
-                </article>
-            </li>
-            <li>
-                <article>
-                    <h3>
-                        Hunger
-                    </h3>
-                    <p>
-                        HungerValue
-                    </p>
-                    <button>Edit</button>
-                </article>
-            </li>
-            <li>
-                <article>
-                    <h3>
-                        Alive
-                    </h3>
-                    <p>
-                        True/False
-                    </p>
-                    <button>Edit</button>
-                </article>
-            </li>
-            <li>
-                <article>
-                    <h3>
-                        Health From Food
-                    </h3>
-                    <p>
-                        HealthFromFoodValue
-                    </p>
-                    <button>Edit</button>
-                </article>
-            </li>
-            <li>
-                <article>
-                    <h3>
-                        Num Food Items
-                    </h3>
-                    <p>
-                        NumFoodItemsValue
-                    </p>
-                    <button>Edit</button>
-                </article>
-            </li>
-            <li>
-                <article>
-                    <h3>
-                        Num Electronics
-                    </h3>
-                    <p>
-                        NumElectronicsValue
-                    </p>
-                    <button>Edit</button>
-                </article>
-            </li>
-            <li>
-                <article>
-                    <h3>
-                        Num Stocks
-                    </h3>
-                    <p>
-                        NumStocksValue
-                    </p>
-                    <button>Edit</button>
-                </article>
-            </li>
-            <li>
-                <article>
-                    <h3>
-                        Diseases ID
-                    </h3>
-                    <p>
-                        DiseasesIDValue
-                    </p>
-                    <button>Edit</button>
-                </article>
-            </li>
-            <li>
-                <article>
-                    <h3>
-                        Next of Kin
-                    </h3>
-                    <p>
-                        NextOfKinIDValue
-                    </p>
-                    <button>Edit</button>
-                </article>
-            </li>
-            <li>
-                <article>
-                    <h3>
-                        Partner
-                    </h3>
-                    <p>
-                        PartnerIDValue
-                    </p>
-                    <button>Edit</button>
-                </article>
-            </li>
-            <li>
-                <article>
-                    <h3>
-                        Parent
-                    </h3>
-                    <p>
-                        ParentIDValue
-                    </p>
-                    <button>Edit</button>
-                </article>
-            </li>
-            <li>
-                <article>
-                    <h3>
-                        Home Owner Status
-                    </h3>
-                    <p>
-                        Renter/Owner
-                    </p>
-                    <button>Edit</button>
-                </article>
-            </li>
-            <li>
-                <article>
-                    <h3>
-                        Bank Account
-                    </h3>
-                    <p>
-                        BankAccountValue
-                    </p>
-                    <button>Edit</button>
-                </article>
-            </li>
-            <li>
-                <article>
-                    <h3>
-                        Short Term Lending Account
-                    </h3>
-                    <p>
-                        ShortTermLendingAccountID
-                    </p>
-                    <button>Edit</button>
-                </article>
-            </li>
-            <li>
-                <article>
-                    <h3>
-                        Mortgage Account
-                    </h3>
-                    <p>
-                        MortgageAccountID
-                    </p>
-                    <button>Edit</button>
-                </article>
-            </li>
-        </ul>
-    </section>
-    <section>
+    <section class="personaStatsSection">
         <h2>Personas Stats</h2>
         <ul class="personaDetailsList">
             <li>
@@ -265,8 +42,175 @@
             </li>
         </ul>
     </section>
+    </header>
+    <section>
+        <h2>Persona Details</h2>
+        <ul class="personaDetailsList">
+            <li>
+                <article>
+                    <h3>
+                        Next of Kin
+                    </h3>
+                    <p id="nextOfKin">
+                        NextOfKinID
+                    </p>
+                </article>
+            </li>
+            <li>
+                <article>
+                    <h3>
+                        Partner
+                    </h3>
+                    <p id="partner">
+                        partnerID
+                    </p>
+                </article>
+            </li>
+            <li>
+                <article>
+                    <h3>
+                        Parent
+                    </h3>
+                    <p id="parent">
+                        parentID
+                    </p>
+                </article>
+            </li>
+            <li>
+                <article>
+                    <h3>
+                        Birth Time
+                    </h3>
+                    <p id="birthTime">
+                        BirthTimeValue
+                    </p>
+                </article>
+            </li>
+            <li>
+                <article>
+                    <h3>
+                        Hunger
+                    </h3>
+                    <p id="hunger">
+                        hungerValue
+                    </p>
+                </article>
+            </li>
+            <li>
+                <article>
+                    <h3>
+                        Health
+                    </h3>
+                    <p id="health">
+                        healthValue
+                    </p>
+                </article>
+            </li>
+            <li>
+                <article>
+                    <h3>
+                        Alive Status
+                    </h3>
+                    <p id="alive">
+                        true/false
+                    </p>
+                </article>
+            </li>
+            <li>
+                <article>
+                    <h3>
+                        Sick Status
+                    </h3>
+                    <p id="sick">
+                        true/false
+                    </p>
+                </article>
+            </li>
+            <li>
+                <article>
+                    <h3>
+                        Electronics Owned
+                    </h3>
+                    <p id="electronics">
+                        numElectronics
+                    </p>
+                </article>
+            </li>
+            <li>
+                <article>
+                    <h3>
+                        Home Owner Status
+                    </h3>
+                    <p id="homeOwnerStatus">
+                        renter/owner
+                    </p>
+                </article>
+            </li>
+            <li>
+                <article>
+                    <h3>
+                        Food Inventory
+                    </h3>
+                    <p id="foodInventory">
+                        foodInventoryID
+                    </p>
+                </article>
+            </li>
+            <li>
+                <article>
+                    <h3>
+                        Stock Inventory
+                    </h3>
+                    <p id="stockInventory">
+                        stockInventoryID
+                    </p>
+                </article>
+            </li>
+        </ul>
+    </section>
+    <section>
+        <h2>Persona Endpoints</h2>
+        <ul class="endpointsList">
+            <li>
+                <button>Spawn a persona</button>
+            </li>
+            <li>
+                <label for="pID1">Persona 1: </label>
+                <input type="number" id="marry-PID1" name="pID1">
+                <label for="pID1">Persona 2: </label>
+                <input type="number" id="marry-PID2" name="pID2">
+                <button>Marry personas</button>
+            </li>
+        </ul>
+    </section>
+    <section>
+        <h2>Economy Endpoints</h2>
+        <ul class="endpointsList">
+            <li>
+                <button>Send persona to doctor</button>
+            </li>
+            <li>
+                <button>Persona buy food</button>
+            </li>
+            <li>
+                <button>Persona get job</button>
+            </li>
+            <li>
+                <button>Persona buy electronics</button>
+            </li>
+            <li>
+                <button>Persona buy electronics</button>
+            </li>
+            <li>
+                <button>Persona buy a stock</button>
+            </li>
+            <li>
+                <button>Persona sell a stock</button>
+            </li>
+        </ul>
+    </section>
     <aside class="zeusFeed">
-        <h3>Zeus Feed</h3>
+        <h3>Event Feed</h3>
         <ul class="zFeedList">
             <li>
                 <h4>Event Title</h4>
