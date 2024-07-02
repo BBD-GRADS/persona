@@ -1,14 +1,15 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Newtonsoft.Json;
+using Microsoft.EntityFrameworkCore;
 using PersonaBackend.Authentication;
 using PersonaBackend.Data;
 using PersonaBackend.Models.examples;
 using PersonaBackend.Models.HandOfZeus;
 using PersonaBackend.Models.Persona;
+using PersonaBackend.Models.Persona.PersonaRequests;
 using PersonaBackend.Models.Responses;
+using Swashbuckle.AspNetCore.Annotations;
 using Swashbuckle.AspNetCore.Filters;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -18,132 +19,297 @@ namespace PersonaBackend.Controllers
     [ApiController]
     public class PersonaController : ControllerBase
     {
+        private readonly Context _dbContext;
+
+        public PersonaController(Context dbContext)
+        {
+            _dbContext = dbContext;
+        }
+
+        private IActionResult HandleException(Exception ex)
+        {
+            return StatusCode(500, $"An error occurred: {ex.Message}");
+        }
+
         /// <summary>
-        /// Gets persona's info
+        /// Gets persona's info by ID.
         /// </summary>
-        /// <param name="personaId">ID number of persona</param>
-        /// <remarks>Some response persona data may be redacted depending on your API key</remarks>
-        /// <returns>Personas info</returns>
-        // GET: api/persona/{id}
         [HttpGet("{personaId}")]
         [ProducesResponseType(typeof(ApiResponse<Persona>), 200)]
-        [ApiKeyAuthFilter("")] //TODO ADD services
-        public async Task<IActionResult> GetPersonaById(string personaId)
+        //[ApiKeyAuthFilter("HandOfZeus")]
+        public async Task<IActionResult> GetPersonaById(long personaId)
         {
-            //maybe redact data based on API key
-            return Ok();
+            try
+            {
+                var persona = await _dbContext.Personas.FirstOrDefaultAsync(p => p.Id == personaId);
+
+                if (persona == null)
+                    return NotFound($"Persona with ID {personaId} not found");
+
+                var response = new ApiResponse<Persona>
+                {
+                    Success = true,
+                    Message = "Persona found",
+                    Data = persona
+                };
+
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                return HandleException(ex);
+            }
         }
 
         /// <summary>
         /// Retrieves all alive personas.
         /// </summary>
         [HttpGet("getAlivePersonas")]
-        [ApiKeyAuthFilter("HandOfZeus")]
+        //[ApiKeyAuthFilter("HandOfZeus")]
         [ProducesResponseType(typeof(ApiResponse<PersonaIdList>), 200)]
         [SwaggerResponseExample(200, typeof(ApiResponsePersonaIdListEmptyExample))]
         public async Task<IActionResult> GetAlivePersonas()
         {
-            return Ok();
+            try
+            {
+                var alivePersonas = await _dbContext.Personas
+                    .Where(p => p.Alive)
+                    .Select(p => p.Id)
+                    .ToListAsync();
+
+                var response = new ApiResponse<PersonaIdList>
+                {
+                    Success = true,
+                    Message = "Alive personas retrieved",
+                    Data = new PersonaIdList { PersonaIds = alivePersonas }
+                };
+
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                return HandleException(ex);
+            }
         }
 
         /// <summary>
         /// Retrieves all childless personas.
         /// </summary>
         [HttpGet("getChildlessPersonas")]
-        [ApiKeyAuthFilter("HandOfZeus")]
+        //[ApiKeyAuthFilter("HandOfZeus")]
         [ProducesResponseType(typeof(ApiResponse<PersonaIdList>), 200)]
         [SwaggerResponseExample(200, typeof(ApiResponsePersonaIdListEmptyExample))]
         public async Task<IActionResult> GetChildlessPersonas()
         {
-            return Ok();
+            try
+            {
+                var childlessPersonas = await _dbContext.Personas
+                    .Where(p => p.ParentId == null)
+                    .Select(p => p.Id)
+                    .ToListAsync();
+
+                var response = new ApiResponse<PersonaIdList>
+                {
+                    Success = true,
+                    Message = "Childless personas retrieved",
+                    Data = new PersonaIdList { PersonaIds = childlessPersonas }
+                };
+
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                return HandleException(ex);
+            }
         }
 
         /// <summary>
         /// Retrieves all unmarried personas.
         /// </summary>
         [HttpGet("getSinglePersonas")]
-        [ApiKeyAuthFilter("HandOfZeus")]
+        //[ApiKeyAuthFilter("HandOfZeus")]
         [ProducesResponseType(typeof(ApiResponse<PersonaIdList>), 200)]
         [SwaggerResponseExample(200, typeof(ApiResponsePersonaIdListEmptyExample))]
         public async Task<IActionResult> GetSinglePersonas()
         {
-            return Ok();
+            try
+            {
+                var singlePersonas = await _dbContext.Personas
+                    .Where(p => p.PartnerId == null)
+                    .Select(p => p.Id)
+                    .ToListAsync();
+
+                var response = new ApiResponse<PersonaIdList>
+                {
+                    Success = true,
+                    Message = "Single personas retrieved",
+                    Data = new PersonaIdList { PersonaIds = singlePersonas }
+                };
+
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                return HandleException(ex);
+            }
         }
 
         /// <summary>
-        /// Gets list of personas that died between dates
+        /// Gets list of personas that died between dates.
         /// </summary>
-        /// <param name="startDate">Start date in format YY|MM|dd (e.g., "22|06|24")</param>
-        /// <param name="endDate">End date in format YY|MM|dd (defaults to startDate if not provided)</param>
-        /// <returns>List of personas who died between the specified dates</returns>
         [HttpGet("hasDied")]
         [ProducesResponseType(typeof(ApiResponse<PersonaIdList>), 200)]
         [SwaggerResponseExample(200, typeof(ApiResponsePersonaIdListEmptyExample))]
-        [ApiKeyAuthFilter("HandOfZeus")]
+        //[ApiKeyAuthFilter("HandOfZeus")]
         public async Task<IActionResult> HasDied(string startDate, string endDate = null)
         {
-            if (string.IsNullOrEmpty(endDate))
+            try
             {
-                endDate = startDate;
+                if (string.IsNullOrEmpty(endDate))
+                {
+                    endDate = startDate;
+                }
+
+                var diedPersonas = await _dbContext.EventsOccurred
+                    .Where(e => e.EventType.EventName == "death" && DateTime.Parse(e.DateOccurred) >= DateTime.Parse(startDate) && DateTime.Parse(e.DateOccurred) <= DateTime.Parse(endDate))
+                    .Select(e => e.PersonaId1)
+                    .ToListAsync();
+
+                var response = new ApiResponse<PersonaIdList>
+                {
+                    Success = true,
+                    Message = "Died personas retrieved",
+                    Data = new PersonaIdList { PersonaIds = diedPersonas }
+                };
+
+                return Ok(response);
             }
-            return Ok();
+            catch (Exception ex)
+            {
+                return HandleException(ex);
+            }
         }
 
         /// <summary>
-        /// Gets list of personas that became an adult between dates
+        /// Gets list of personas that became adults between dates.
         /// </summary>
-        /// <param name="startDate">Start date in format YY|MM|dd (e.g., "22|06|24")</param>
-        /// <param name="endDate">End date in format YY|MM|dd (defaults to startDate if not provided)</param>
-        /// <returns>List of personas who died between the specified dates</returns>
         [HttpGet("becameAdult")]
         [ProducesResponseType(typeof(ApiResponse<PersonaIdList>), 200)]
         [SwaggerResponseExample(200, typeof(ApiResponsePersonaIdListEmptyExample))]
-        [ApiKeyAuthFilter("HandOfZeus")]
+        //[ApiKeyAuthFilter("HandOfZeus")]
         public async Task<IActionResult> BecameAdult(string startDate, string endDate = null)
         {
-            if (string.IsNullOrEmpty(endDate))
+            try
             {
-                endDate = startDate;
+                if (string.IsNullOrEmpty(endDate))
+                {
+                    endDate = startDate;
+                }
+
+                var adultPersonas = await _dbContext.EventsOccurred
+                    .Where(e => e.EventType.EventName == "adult" && DateTime.Parse(e.DateOccurred) >= DateTime.Parse(startDate) && DateTime.Parse(e.DateOccurred) <= DateTime.Parse(endDate))
+                    .Select(e => e.PersonaId1)
+                    .ToListAsync();
+
+                var response = new ApiResponse<PersonaIdList>
+                {
+                    Success = true,
+                    Message = "Adult personas retrieved",
+                    Data = new PersonaIdList { PersonaIds = adultPersonas }
+                };
+
+                return Ok(response);
             }
-            return Ok();
+            catch (Exception ex)
+            {
+                return HandleException(ex);
+            }
         }
 
         /// <summary>
-        /// Gets list of personas that got married between dates
+        /// Gets list of personas that got married between dates.
         /// </summary>
-        /// <param name="startDate">Start date in format YY|MM|dd (e.g., "22|06|24")</param>
-        /// <param name="endDate">End date in format YY|MM|dd (defaults to startDate if not provided)</param>
-        /// <returns>List of personas who died between the specified dates</returns>
         [HttpGet("gotMarried")]
-        [ProducesResponseType(typeof(ApiResponse<PersonaPairs>), 200)]
+        [ProducesResponseType(typeof(ApiResponse<PersonaMarriageList>), 200)]
         [SwaggerResponseExample(200, typeof(ApiResponseMarriedPairExample))]
-        [ApiKeyAuthFilter("HandOfZeus")]
+        //[ApiKeyAuthFilter("HandOfZeus")]
         public async Task<IActionResult> GotMarried(string startDate, string endDate = null)
         {
-            if (string.IsNullOrEmpty(endDate))
+            try
             {
-                endDate = startDate;
+                if (string.IsNullOrEmpty(endDate))
+                {
+                    endDate = startDate;
+                }
+
+                var marriedPersonas = await _dbContext.EventsOccurred
+                    .Where(e => e.EventType.EventName == "married" && DateTime.Parse(e.DateOccurred) >= DateTime.Parse(startDate) && DateTime.Parse(e.DateOccurred) <= DateTime.Parse(endDate))
+                    .Select(e => new PersonaMarriagePair
+                    {
+                        FirstPerson = e.PersonaId1,
+                        SecondPerson = e.PersonaId2
+                    })
+                    .ToListAsync();
+
+                var response = new ApiResponse<PersonaMarriageList>
+                {
+                    Success = true,
+                    Message = "Married personas retrieved",
+                    Data = new PersonaMarriageList
+                    {
+                        MarriagePairs = marriedPersonas.ToList()
+                    }
+                };
+
+                return Ok(response);
             }
-            return Ok();
+            catch (Exception ex)
+            {
+                return HandleException(ex);
+            }
         }
 
         /// <summary>
-        /// Gets list of personas that had a child between dates
+        /// Gets list of personas that had a child between dates.
         /// </summary>
-        /// <param name="startDate">Start date in format YY|MM|dd (e.g., "22|06|24")</param>
-        /// <param name="endDate">End date in format YY|MM|dd (defaults to startDate if not provided)</param>
-        /// <returns>List of personas who died between the specified dates</returns>
         [HttpGet("hadChild")]
         [ProducesResponseType(typeof(ApiResponse<ParentChildList>), 200)]
         [SwaggerResponseExample(200, typeof(ApiResponseChildPairExample))]
-        [ApiKeyAuthFilter("HandOfZeus")]
+        //[ApiKeyAuthFilter("HandOfZeus")]
         public async Task<IActionResult> HadChild(string startDate, string endDate = null)
         {
-            if (string.IsNullOrEmpty(endDate))
+            try
             {
-                endDate = startDate;
+                if (string.IsNullOrEmpty(endDate))
+                {
+                    endDate = startDate;
+                }
+
+                var parentChildPairs = await _dbContext.EventsOccurred
+                    .Where(e => e.EventType.EventName == "born" && DateTime.Parse(e.DateOccurred) >= DateTime.Parse(startDate) && DateTime.Parse(e.DateOccurred) <= DateTime.Parse(endDate))
+                    .Select(e => new ParentChildPair
+                    {
+                        ParentId = e.PersonaId1,
+                        ChildId = e.PersonaId2
+                    })
+                    .ToListAsync();
+
+                var response = new ApiResponse<ParentChildList>
+                {
+                    Success = true,
+                    Message = "Parent-child relationships retrieved",
+                    Data = new ParentChildList
+                    {
+                        ParentChildren = parentChildPairs.ToList()
+                    }
+                };
+
+                return Ok(response);
             }
-            return Ok();
+            catch (Exception ex)
+            {
+                return HandleException(ex);
+            }
         }
     }
 }

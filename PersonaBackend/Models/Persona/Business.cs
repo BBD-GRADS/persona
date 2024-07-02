@@ -8,7 +8,12 @@ namespace PersonaBackend.Models.Persona
         [Key]
         public int Id { get; set; }
 
-        public string? business_name { get; set; }
-        public string? business_type { get; set; }
+        [Required]
+        [StringLength(50)]
+        public string BusinessName { get; set; }
+
+        [Required]
+        [StringLength(50)]
+        public string BusinessType { get; set; }
     }
 }
