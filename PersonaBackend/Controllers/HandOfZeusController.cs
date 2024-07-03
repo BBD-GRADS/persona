@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Newtonsoft.Json;
 using PersonaBackend.Authentication;
 using PersonaBackend.Data;
 using PersonaBackend.Models.HandOfZeus;
@@ -11,6 +12,7 @@ using PersonaBackend.Utils;
 using Swashbuckle.AspNetCore.Annotations;
 using System;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace PersonaBackend.Controllers
@@ -22,12 +24,14 @@ namespace PersonaBackend.Controllers
         private readonly Context _dbContext;
         private readonly Chronos _chronos;
         private readonly AWSManagerService _awsManagerService;
+        private readonly HttpClient _httpClient;
 
-        public HandOfZeusController(Context dbContext, Chronos chronos, AWSManagerService awsManagerService)
+        public HandOfZeusController(Context dbContext, Chronos chronos, AWSManagerService awsManagerService, HttpClient httpClient)
         {
             _dbContext = dbContext;
             _chronos = chronos;
             _awsManagerService = awsManagerService;
+            _httpClient = httpClient;
         }
 
         [HttpPost("startSimulation")]
@@ -52,11 +56,14 @@ namespace PersonaBackend.Controllers
                 }
 
                 var personas = new List<Persona>();
+                var events = new List<EventOccurred>();
+                var personaIDs = new List<long>();
 
                 for (int i = 0; i < request.NumberOfPersonas; i++)
                 {
                     var persona = new Persona
                     {
+                        Id = i,
                         NextOfKinId = null,
                         PartnerId = null,
                         ParentId = null,
@@ -69,17 +76,68 @@ namespace PersonaBackend.Controllers
                         NumElectronicsOwned = 0,
                         //HomeOwningStatusId = 0, //default? TODO make enum add a status here later
                     };
+                    var eventOccurred = new EventOccurred
+                    {
+                        PersonaId1 = persona.Id,
+                        PersonaId2 = persona.Id,
+                        EventId = (int)EventTypeEnum.Adult,
+                        DateOccurred = request.StartDate
+                    };
+
+                    _dbContext.EventsOccurred.Add(eventOccurred);
 
                     personas.Add(persona);
-                    //for each
-                    //TODO call retail bank to open account - deposit 1000 starting
+                    events.Add(eventOccurred);
+
+                    personaIDs.Add(i);
+
                     //TODO call labour people to get job
                     //TODO call insure LIFE and HEALTH
                     //TODO get house rent/buy - see salary?
                     //TODO buy first food and electronic we know we have 1000
                 }
 
+                // Call retail bank to open account and deposit 1000 starting amount
+                var requestData = new { PersonaIds = personaIDs };
+                var json = JsonConvert.SerializeObject(requestData);
+                var content = new StringContent(json, Encoding.UTF8, "application/json");
+                var response = await _httpClient.PostAsync("https://api.retailbank.projects.bbdgrad.com/api.customers", content);
+                if (!response.IsSuccessStatusCode)
+                {
+                    return StatusCode((int)response.StatusCode, new ApiResponse<bool> { Data = false, Message = "Failed to create persona accounts at the retail bank." });
+                }
+
+                // Create the request body for Health Insurance
+                var healthInsuranceRequestData = personaIDs.Select(id => new
+                {
+                    PersonaID = id,
+                    Dependents = new List<int>()
+                }).ToList();
+                var healthInsuranceJson = JsonConvert.SerializeObject(healthInsuranceRequestData);
+                var healthInsuranceContent = new StringContent(healthInsuranceJson, Encoding.UTF8, "application/json");
+                var healthInsuranceResponse = await _httpClient.PostAsync("https://api.healthinsurance.projects.bbdgrad.com/api.customers", healthInsuranceContent);
+                if (!healthInsuranceResponse.IsSuccessStatusCode)
+                {
+                    return StatusCode((int)healthInsuranceResponse.StatusCode, new ApiResponse<bool> { Data = false, Message = "Failed to register personas with health insurance." });
+                }
+
+                // Create the request body for Life Insurance
+                var lifeInsuranceRequestData = personaIDs.Select(id => new
+                {
+                    PersonaID = id,
+                    Dependents = new List<int>()
+                }).ToList();
+                var lifeInsuranceJson = JsonConvert.SerializeObject(healthInsuranceRequestData);
+                var lifeInsuranceContent = new StringContent(healthInsuranceJson, Encoding.UTF8, "application/json");
+                var lifeInsuranceResponse = await _httpClient.PostAsync("https://api.lifeinsurance.projects.bbdgrad.com/api.customers", healthInsuranceContent);
+                if (!lifeInsuranceResponse.IsSuccessStatusCode)
+                {
+                    return StatusCode((int)lifeInsuranceResponse.StatusCode, new ApiResponse<bool> { Data = false, Message = "Failed to register personas with life insurance." });
+                }
+
                 await _dbContext.Personas.AddRangeAsync(personas);
+                await _dbContext.EventsOccurred.AddRangeAsync(events);
+
                 await _dbContext.SaveChangesAsync();
 
                 return Ok(new ApiResponse<bool> { Data = true, Message = $"Simulation started successfully with {request.NumberOfPersonas} persona records" });
