@@ -9,12 +9,12 @@ namespace PersonaBackend.Authentication
     [AttributeUsage(AttributeTargets.Method | AttributeTargets.Class, Inherited = true, AllowMultiple = true)]
     public class ApiKeyAuthFilter : Attribute, IAsyncAuthorizationFilter
     {
-        private readonly AWSSecretsManagerService _secretsManagerService;
+        private readonly AWSManagerService _secretsManagerService;
         private readonly List<string> _allowedServiceNames;
 
         public ApiKeyAuthFilter(params string[] allowedServiceNames)
         {
-            _secretsManagerService = AWSSecretsManagerService.Instance;
+            _secretsManagerService = AWSManagerService.Instance;
             _allowedServiceNames = allowedServiceNames.ToList();
         }
 

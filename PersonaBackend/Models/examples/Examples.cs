@@ -1,9 +1,10 @@
-﻿namespace PersonaBackend.Models.examples
-{
-    using PersonaBackend.Models.Persona;
-    using PersonaBackend.Models.Responses;
-    using Swashbuckle.AspNetCore.Filters;
+﻿using PersonaBackend.Models.Persona.PersonaRequests;
+using PersonaBackend.Models.Responses;
+using Swashbuckle.AspNetCore.Filters;
+using System.Collections.Generic;
 
+namespace PersonaBackend.Models.examples
+{
     public class ApiResponsePersonaIdListExample : IExamplesProvider<ApiResponse<PersonaIdList>>
     {
         public ApiResponse<PersonaIdList> GetExamples()
@@ -12,9 +13,9 @@
             {
                 Data = new PersonaIdList
                 {
-                    PersonaIds = [1, 2, 3, 7, 8]
+                    PersonaIds = new List<long> { 1, 2, 3, 7, 8 }
                 },
-                Message = "Successfully retrieved blah blah blah",
+                Message = "Successfully retrieved persona IDs",
                 Success = true
             };
         }
@@ -36,17 +37,22 @@
         }
     }
 
-    public class ApiResponseMarriedPairExample : IExamplesProvider<ApiResponse<PersonaPairs>>
+    public class ApiResponseMarriedPairExample : IExamplesProvider<ApiResponse<PersonaMarriageList>>
     {
-        public ApiResponse<PersonaPairs> GetExamples()
+        public ApiResponse<PersonaMarriageList> GetExamples()
         {
-            return new ApiResponse<PersonaPairs>
+            return new ApiResponse<PersonaMarriageList>
             {
-                Data = new PersonaPairs
+                Data = new PersonaMarriageList
                 {
-                    Pairs = [[1, 2], [3, 7], [4, 8]]
+                    MarriagePairs = new List<PersonaMarriagePair>
+                    {
+                        new PersonaMarriagePair { FirstPerson = 1, SecondPerson = 2 },
+                        new PersonaMarriagePair { FirstPerson = 3, SecondPerson = 7 },
+                        new PersonaMarriagePair { FirstPerson = 4, SecondPerson = 8 }
+                    }
                 },
-                Message = "They be married",
+                Message = "Successfully married the personas",
                 Success = true
             };
         }
@@ -60,15 +66,15 @@
             {
                 Data = new ParentChildList
                 {
-                    Parents = [1, 4, 8],
-                    Children = new Dictionary<long, List<long>>
-                            {
-                        { 1, [22, 32] },
-                        {4,[38] },
-                        {8,[9] }
-                            }
+                    ParentChildren = new List<ParentChildPair>
+                    {
+                        new ParentChildPair { ParentId = 1, ChildId = 22 },
+                        new ParentChildPair { ParentId = 1, ChildId = 32 },
+                        new ParentChildPair { ParentId = 4, ChildId = 38 },
+                        new ParentChildPair { ParentId = 8, ChildId = 9 }
+                    }
                 },
-                Message = "They had a good time",
+                Message = "Successfully retrieved parent-child relationships",
                 Success = true
             };
         }
@@ -94,7 +100,7 @@
             return new ApiResponse<bool>
             {
                 Data = true,
-                Message = "This call was successfull or something along those lines",
+                Message = "Operation completed successfully",
                 Success = true
             };
         }
