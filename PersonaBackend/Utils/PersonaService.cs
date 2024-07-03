@@ -54,7 +54,7 @@ namespace PersonaBackend.Utils
                 int numberOfFoodItemsToAdd = 1; // 3
                 List<FoodItem> foodItemsToAdd = new List<FoodItem>();
 
-                var requestData = new { personaId = persona.Id };
+                var requestData = new { consumerId = persona.Id };
                 var json = JsonConvert.SerializeObject(requestData);
                 var content = new StringContent(json, Encoding.UTF8, "application/json");
                 var response = await _httpClient.PostAsync("https://foodretail-app.eu-west-1.elasticbeanstalk.com/api/Buy", content);
@@ -83,7 +83,7 @@ namespace PersonaBackend.Utils
                 //talk to retailer
 
                 int numberOfElectronicsToAdd = 2;
-                var requestElectronicsData = new { personaId = persona.Id, quantity = numberOfElectronicsToAdd };
+                var requestElectronicsData = new { customerId = persona.Id, quantity = numberOfElectronicsToAdd };
                 var electronicsJson = JsonConvert.SerializeObject(requestElectronicsData);
                 var electronicsContent = new StringContent(electronicsJson, Encoding.UTF8, "application/json");
                 var responseElectronics = await _httpClient.PostAsync("https://service.electronics.projects.bbdgrad.com/store/order", electronicsContent);
