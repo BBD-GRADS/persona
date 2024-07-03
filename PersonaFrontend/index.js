@@ -30,6 +30,7 @@ let electronics = document.getElementById("electronics");
 let homeOwner = document.getElementById("homeOwnerStatus");
 let foodInventory = document.getElementById("foodInventory");
 let stockInventory = document.getElementById("stockInventory");
+let adult = document.getElementById("adult");
 
 
 addChildButton.addEventListener("click",spawnChild);
@@ -125,6 +126,7 @@ function updatePersonaDetails(personaID, personaJSON)
     homeOwner.innerText = personaJSON.home_owning_status;
     foodInventory.innerText = personaJSON.num_food_items;
     stockInventory.innerText = personaJSON.num_stocks_owned;
+    adult.innerText = personaJSON.adult;
 
 
 }
@@ -135,4 +137,4 @@ function isEmpty(input) {
     return !input.trim().length;
 }
 
-personaTestObj = JSON.parse('{"id": 2,"parent_id": 1,"partner_id": 3,"next_of_kin_id": 5,"birth_date": "01|10|19","hunger": 88,"health": 100,"alive": true,"sick": false,"num_electronics_owned": 3,"home_owning_status": "owner","num_food_items": 5,"num_stocks_owned": 3}')
+personaTestObj = JSON.parse('{"id": 2,"parent_id": 1,"partner_id": 3,"next_of_kin_id": 5,"birth_date": "01|10|19","hunger": 88,"health": 100,"alive": true,"sick": false,"num_electronics_owned": 3,"home_owning_status": "owner","num_food_items": 5,"num_stocks_owned": 3,"adult": true}')
