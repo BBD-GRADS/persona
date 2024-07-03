@@ -21,7 +21,7 @@ namespace PersonaBackend.Utils
             {
                 //TODO: get bank balance
                 //talk to retailer
-                int numberOfFoodItemsToAdd = 2;
+                int numberOfFoodItemsToAdd = 2;//3
                 List<FoodItem> foodItemsToAdd = new List<FoodItem>();
 
                 for (int i = 0; i < numberOfFoodItemsToAdd; i++)
@@ -138,7 +138,7 @@ namespace PersonaBackend.Utils
                     int hungerAfterEating = (int)Math.Round(persona.Hunger * 0.25);
                     healthiestFood.Eaten = true;
                     persona.DaysStarving = 0;
-                    //_dbContext.FoodItems.Update(healthiestFood);
+                    _dbContext.FoodItems.Update(healthiestFood);
                 }
                 else
                 {

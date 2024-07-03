@@ -19,25 +19,25 @@ namespace PersonaBackend.Controllers
             _chronos = chronos;
         }
 
-        //[HttpDelete("removeOldFood")]
-        //public async Task<IActionResult> removeOldFood()
-        //{
-        //    try
-        //    {
-        //        var eatenFoodItems = await _dbContext.FoodItems
-        //            .Where(f => f.Eaten || f.FoodHealth == 0)
-        //            .ToListAsync();
-        //        _dbContext.FoodItems.RemoveRange(eatenFoodItems);
+        [HttpDelete("removeOldFood")]
+        public async Task<IActionResult> removeOldFood()
+        {
+            try
+            {
+                var eatenFoodItems = await _dbContext.FoodItems
+                    .Where(f => f.Eaten || f.FoodHealth == 0)
+                    .ToListAsync();
+                _dbContext.FoodItems.RemoveRange(eatenFoodItems);
 
-        //        await _dbContext.SaveChangesAsync();
+                await _dbContext.SaveChangesAsync();
 
-        //        return Ok();
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        return StatusCode(500, $"Internal server error: {ex.Message}");
-        //    }
-        //}
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Internal server error: {ex.Message}");
+            }
+        }
 
         [HttpPost("updateAllFood")]
         public async Task<IActionResult> updateAllFood()
