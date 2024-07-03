@@ -1,28 +1,67 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using System.Text;
+using System.Text.Json;
+using System.Text.Json.Serialization;
+using Microsoft.EntityFrameworkCore;
+using Newtonsoft.Json;
 using PersonaBackend.Data;
 using PersonaBackend.Models.Persona;
 
 namespace PersonaBackend.Utils
 {
+    public class CustomerAccount
+    {
+        [JsonPropertyName("balanceInMibiBBDough")]
+        public decimal BalanceInMibiBBDough { get; set; }
+    }
     public class PersonaService
     {
         private readonly Context _dbContext;
         private readonly Chronos _chronos;
+        private readonly HttpClient _httpClient;
 
-        public PersonaService(Context dbContext, Chronos chronos)
+        public PersonaService(Context dbContext, Chronos chronos, HttpClient httpClient)
         {
             _dbContext = dbContext;
             _chronos = chronos;
+            _httpClient = httpClient;
         }
 
-        public void BuyItems(Persona persona)
+        public async void BuyItems(Persona persona)
         {
             try
             {
                 //TODO: get bank balance
+
+                // var personaId = new { persona.Id };
+                // var response = await _httpClient.GetAsync($"https://api.retailbank.projects.bbdgrad.com/api/customers/{personaId}/accounts");
+                // // var response = _httpClient.GetAsync($"https://api.retailbank.projects.bbdgrad.com/api/customers/{personaId}/accounts").Result;
+                // if (!response.IsSuccessStatusCode)
+                // {
+                //     return; // Oh no!
+                // }
+
+                // var content = await response.Content.ReadAsStringAsync();
+                // var options = new JsonSerializerOptions
+                // {
+                //     PropertyNameCaseInsensitive = true,
+                // };
+
+                // var customerAccounts = System.Text.Json.JsonSerializer.Deserialize<List<CustomerAccount>>(content, options);
+                // var balance = customerAccounts?.FirstOrDefault()?.BalanceInMibiBBDough ?? 0;
+
+
                 //talk to retailer
-                int numberOfFoodItemsToAdd = 2;//3
+                int numberOfFoodItemsToAdd = 1; // 3
                 List<FoodItem> foodItemsToAdd = new List<FoodItem>();
+
+                var requestData = new { personaId = persona.Id };
+                var json = JsonConvert.SerializeObject(requestData);
+                var content = new StringContent(json, Encoding.UTF8, "application/json");
+                var response = await _httpClient.PostAsync("https://foodretail-app.eu-west-1.elasticbeanstalk.com/api/Buy", content);
+                if (!response.IsSuccessStatusCode)
+                {
+                   return; // StatusCode((int)response.StatusCode, new ApiResponse<bool> { Data = false, Message = "Failed to create persona accounts at the retail bank." });
+                }
 
                 for (int i = 0; i < numberOfFoodItemsToAdd; i++)
                 {
@@ -43,7 +82,16 @@ namespace PersonaBackend.Utils
                 //TODO: Calc left over money buy electronics
                 //talk to retailer
 
-                int numberOfElectronicsToAdd = 1;
+                int numberOfElectronicsToAdd = 2;
+                var requestElectronicsData = new { personaId = persona.Id, quantity = numberOfElectronicsToAdd };
+                var electronicsJson = JsonConvert.SerializeObject(requestElectronicsData);
+                var electronicsContent = new StringContent(electronicsJson, Encoding.UTF8, "application/json");
+                var responseElectronics = await _httpClient.PostAsync("https://service.electronics.projects.bbdgrad.com/store/order", electronicsContent);
+                if (!responseElectronics.IsSuccessStatusCode)
+                {
+                   return; // StatusCode((int)response.StatusCode, new ApiResponse<bool> { Data = false, Message = "Failed to create persona accounts at the retail bank." });
+                }
+
                 persona.NumElectronicsOwned += numberOfElectronicsToAdd;
 
                 _dbContext.Personas.Update(persona);
