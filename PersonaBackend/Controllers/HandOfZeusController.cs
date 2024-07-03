@@ -84,8 +84,6 @@ namespace PersonaBackend.Controllers
                         DateOccurred = request.StartDate
                     };
 
-                    _dbContext.EventsOccurred.Add(eventOccurred);
-
                     personas.Add(persona);
                     events.Add(eventOccurred);
 
