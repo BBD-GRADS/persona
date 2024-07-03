@@ -25,7 +25,7 @@
                     <h3>
                         Persona Population (Alive)
                     </h3>
-                    <p>
+                    <p id="aliveValue">
                         198290
                     </p>
                 </article>
@@ -35,8 +35,28 @@
                     <h3>
                         Deceased
                     </h3>
-                    <p>
+                    <p id="deceasedValue">
                         3312
+                    </p>
+                </article>
+            </li>
+            <li>
+                <article>
+                    <h3>
+                        Births
+                    </h3>
+                    <p id="birthsValue">
+                        230948
+                    </p>
+                </article>
+            </li>
+            <li>
+                <article>
+                    <h3>
+                        Marriages
+                    </h3>
+                    <p id="marriagesValue">
+                        1837
                     </p>
                 </article>
             </li>
@@ -79,7 +99,7 @@
             <li>
                 <article>
                     <h3>
-                        Birth Time
+                        Birth Date
                     </h3>
                     <p id="birthTime">
                         BirthTimeValue
@@ -168,70 +188,47 @@
             </li>
         </ul>
     </section>
-    <section>
-        <h2>Persona Endpoints</h2>
-        <ul class="endpointsList">
-            <li>
-                <button id="spawnPersonabtn">Spawn a persona</button>
-            </li>
-            <li>
-                <button id="checkResidentsBtn">Check residents in Persona's house</button>
-            </li>
-        </ul>
+    <section class="endpointsAndResponseHolder">
+        <section class="endpointsHolder">
+            <h2>Persona Endpoints</h2>
+            <ul class="endpointsList">
+                <li>
+                    <button id="spawnChildbtn">Add a child</button>
+                </li>
+                <li>
+                    <button id="checkResidentsBtn">Check residents in Persona's house</button>
+                </li>
+                <li>
+                    <button id="checkStockBtn">Check stock for Persona</button>
+                </li>
+            </ul>
+                        <h2>Persona Actions</h2>
+                <ul class="endpointsList">
+                <li>
+                    <button id="buyFoodBtn">Buy Food for Persona</button>
+                </li>
+                <li>
+                    <button id="buyElectronicBtn">Buy Electronic For Persona</button>
+                </li>
+                <li>
+                    <button id="buyStockBtn">Buy Stock For Persona</button>
+                </li>
+                <li>
+                    <label for="stock">Stock ID</label>
+                    <input type="number" id="sellStockInput" name="stock">
+                    <button id="sellStockBtn">Sell Stock For Persona</button>
+                </li>
+            </ul>
+        </section>
+        <section class="responseHolder">
+            <h2>Response</h2>
+            <p id="responseText">Responses will go here.</p>
+        </section>
     </section>
-    <section>
-        <h2>Persona Actions</h2>
-        <ul class="endpointsList">
-            <li>
-                <button id="buyFoodBtn">Buy Food for Persona</button>
-            </li>
-            <li>
-                <button id="buyElectronicBtn">Buy Electronic For Persona</button>
-            </li>
-            <li>
-                <button id="buyStockBtn">Buy Stock For Persona</button>
-            </li>
-            <li>
-                <label for="stock">Stock ID</label>
-                <input type="number" id="sellStockInput" name="stock">
-                <button id="sellStockBtn">Sell Stock For Persona</button>
-            </li>
-        </ul>
     </section>
-    <button id = "testAddEvent">Add event (testing)</button>
-    <aside class="zeusFeed">
-        <h3>Event Feed</h3>
-        <ul class="zFeedList" id="eventList">
-            <li>
-                <h4>Event Title</h4>
-                <p>Time occured: </p>
-            </li>
-            <li>
-                <h4>Event Title</h4>
-                <p>Time occured: </p>
-            </li>
-            <li>
-                <h4>Event Title</h4>
-                <p>Time occured: </p>
-            </li>
-            <li>
-                <h4>Event Title</h4>
-                <p>Time occured: </p>
-            </li>
-            <li>
-                <h4>Event Title</h4>
-                <p>Time occured: </p>
-            </li>
-            <li>
-                <h4>Event Title</h4>
-                <p>Time occured: </p>
-            </li>
-            <li>
-                <h4>Event Title</h4>
-                <p>Time occured: </p>
-            </li>
-        </ul>
-    </aside>
+
+        
+    
 </body>
 <script src="index.js"></script>
 </html>
