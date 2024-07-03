@@ -10,7 +10,7 @@
     <header class="headerItems">
         <section>
         <h1>Persona Manager <button>Logout</button></h1>
-        <h2>Currently viewing Persona ID: None</h2>
+        <h2 id="personaIDTitle">Currently viewing Persona ID: None</h2>
         <section>
             <label for="pSearch">Search for a Persona ID: </label>
             <input type="number" id="pSearch" name="pSearch">
@@ -172,46 +172,36 @@
         <h2>Persona Endpoints</h2>
         <ul class="endpointsList">
             <li>
-                <button>Spawn a persona</button>
+                <button id="spawnPersonabtn">Spawn a persona</button>
             </li>
             <li>
-                <label for="pID1">Persona 1: </label>
-                <input type="number" id="marry-PID1" name="pID1">
-                <label for="pID1">Persona 2: </label>
-                <input type="number" id="marry-PID2" name="pID2">
-                <button>Marry personas</button>
+                <button id="checkResidentsBtn">Check residents in Persona's house</button>
             </li>
         </ul>
     </section>
     <section>
-        <h2>Economy Endpoints</h2>
+        <h2>Persona Actions</h2>
         <ul class="endpointsList">
             <li>
-                <button>Send persona to doctor</button>
+                <button id="buyFoodBtn">Buy Food for Persona</button>
             </li>
             <li>
-                <button>Persona buy food</button>
+                <button id="buyElectronicBtn">Buy Electronic For Persona</button>
             </li>
             <li>
-                <button>Persona get job</button>
+                <button id="buyStockBtn">Buy Stock For Persona</button>
             </li>
             <li>
-                <button>Persona buy electronics</button>
-            </li>
-            <li>
-                <button>Persona buy electronics</button>
-            </li>
-            <li>
-                <button>Persona buy a stock</button>
-            </li>
-            <li>
-                <button>Persona sell a stock</button>
+                <label for="stock">Stock ID</label>
+                <input type="number" id="sellStockInput" name="stock">
+                <button id="sellStockBtn">Sell Stock For Persona</button>
             </li>
         </ul>
     </section>
+    <button id = "testAddEvent">Add event (testing)</button>
     <aside class="zeusFeed">
         <h3>Event Feed</h3>
-        <ul class="zFeedList">
+        <ul class="zFeedList" id="eventList">
             <li>
                 <h4>Event Title</h4>
                 <p>Time occured: </p>
