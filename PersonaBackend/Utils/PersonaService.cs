@@ -51,7 +51,7 @@ namespace PersonaBackend.Utils
                 // var balance = customerAccounts?.FirstOrDefault()?.BalanceInMibiBBDough ?? 0;
 
                 //talk to retailer
-                int numberOfFoodItemsToAdd = 3;
+                int numberOfFoodItemsToAdd = 1;
                 List<FoodItem> foodItemsToAdd = new List<FoodItem>();
 
                 var requestData = new { consumerId = persona.Id };
