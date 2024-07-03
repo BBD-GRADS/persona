@@ -1,67 +1,65 @@
-# name: C# API DEPLOY
-# on:
-#   push:
-#     branches: [ "testing_api_deploy" ]
-#   pull_request:
-#     branches: [ "main" ]
+name: Deploy New App Version (Backend)
 
-# jobs:
-#   build_api:
-#     runs-on: ubuntu-latest
-#     permissions:
-#       contents: read
-#     steps:
-#       - name: Checkout repository
-#         uses: actions/checkout@v2
+on:
+  push:
+    branches: ["testing_api_deploy"]
+  pull_request:
+    branches: ["main"]
+    paths:
+      - "PersonaBackend/**"
+  workflow_dispatch:
 
-#       - name: Set up .NET Core SDK
-#         uses: actions/setup-dotnet@v1
-#         with:
-#           dotnet-version: 8.0.x # Change this to your desired .NET Core version
+permissions:
+  id-token: write
+  contents: read
 
-#       - name: Publish API
-#         env:
-#           GPT_API_KEY: ${{ secrets.GPT_API_KEY}}
-#         run: |
-#           cd ./CodeGenerator/CodeGeneratorAPI
-#           dotnet publish -c Release -o Release
+jobs:
+  build:
+    runs-on: ubuntu-latest
 
-#       - name: Inject .env files into Releases
-#         env:
-#           GPT_API_KEY: ${{ secrets.GPT_API_KEY}}
-#         run: | 
-#           cd ./CodeGenerator/CodeGeneratorAPI/Release
-#           echo ""GPT_API_KEY": "${{ secrets.GPT_API_KEY}}"" >> .env
-#           echo ""GPT_API_KEY": "${{ secrets.GPT_API_KEY}}"" >> ~/.bashrc
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-        
-# # echo ""githubSecret": "${{ secrets.GITHUBSECRET}}"" >> .env
-# # echo ""githubId": "${{ secrets.GITHUBID}}"" >> .env
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: eu-west-1
 
-#       - name: Login to DockerHub
-#         run: docker login -u ${{secrets.DOCKER_USERNAME}} -p ${{secrets.DOCKER_PASSWORD}}
-      
-#       - name: Build & Publish Docker image
-#         env:
-#           GPT_API_KEY: ${{ secrets.GPT_API_KEY}}
-#         run: |
-#           cd ./CodeGenerator/CodeGeneratorAPI
-#           docker build -t ${{secrets.DB_BUILD_USERNAME}}/csharp-levelup-dockerhub .
-#           docker push ${{secrets.DB_BUILD_USERNAME}}/csharp-levelup-dockerhub:latest
+      - name: Setup dotnet cli
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.x
 
-#   deploy_api:
-#     needs: build_api
-#     runs-on: self-hosted
-#     steps:
-#       - name: Pull image from docker
-#         env:
-#           GPT_API_KEY: ${{ secrets.GPT_API_KEY}}
-#         run: sudo docker pull ${{secrets.DB_BUILD_USERNAME}}/csharp-levelup-dockerhub:latest
-#       - name: Delete old container
-#         env:
-#           GPT_API_KEY: ${{ secrets.GPT_API_KEY}}
-#         run: sudo docker rm -f csharp-levelup-ec2
-#       - name: Run container
-#         env:
-#           GPT_API_KEY: ${{ secrets.GPT_API_KEY}}
-#         run: sudo docker run -e GPT_API_KEY=${{ secrets.GPT_API_KEY }} -d -p 80:8080 --name csharp-levelup-ec2 ${{secrets.DB_BUILD_USERNAME}}/csharp-levelup-dockerhub:latest
+      - name: Dotnet publish
+        run: |
+          dotnet restore;
+          dotnet publish -r linux-x64 --configuration "Release" --self-contained "true";
+        working-directory: PersonaBackend
+
+      - name: Package artifact
+        run: zip -r ../site.zip *
+        working-directory: PersonaBackend/bin/Release/net8.0/linux-x64/publish
+
+      - name: Upload artifact to S3
+        run: aws s3 cp site.zip s3://${{ secrets.BUCKET_NAME }}/application-${{ github.run_id }}.zip
+        working-directory: PersonaBackend/bin/Release/net8.0/linux-x64
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build
+
+    steps:
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: eu-west-1
+
+      - name: Deploy to Elastic Beanstalk
+        run: |
+          aws elasticbeanstalk create-application-version --application-name api-app --version-label ${{ github.run_id }} --source-bundle S3Bucket="${{ secrets.BUCKET_NAME }}",S3Key="application-${{ github.run_id }}.zip"
+          aws elasticbeanstalk update-environment --application-name api-app --environment-name api-env --version-label ${{ github.run_id }}
