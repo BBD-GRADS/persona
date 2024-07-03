@@ -224,6 +224,38 @@ namespace PersonaBackend.Controllers
         /// <summary>
         /// Retrieves all unmarried personas.
         /// </summary>
+        /// /// <summary>
+        /// Retrieves all childless personas.
+        /// </summary>
+        [HttpGet("getAlivePersonaIds")]
+        //[ApiKeyAuthFilter("HandOfZeus")]
+        [ProducesResponseType(typeof(ApiResponse<PersonaIdList>), 200)]
+        //[SwaggerResponseExample(200, typeof(ApiResponsePersonaIdListEmptyExample))]
+        public async Task<IActionResult> GetAlivePersonaIds()
+        {
+            try
+            {
+                var alivePersonas = await _dbContext.Personas
+                    .Where(p => p.Alive == true).Select(s => s.Id).ToListAsync();
+
+                var response = new ApiResponse<PersonaIdList>
+                {
+                    Success = true,
+                    Message = "Retrieve all alive persona ids",
+                    Data = new PersonaIdList { PersonaIds = alivePersonas }
+                };
+
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                return HandleException(ex);
+            }
+        }
+
+        /// <summary>
+        /// Retrieves all unmarried personas.
+        /// </summary>
         [HttpGet("getSinglePersonas")]
         [ProducesResponseType(typeof(ApiResponse<PersonaIdList>), 200)]
         //[ApiKeyAuthFilter("HandOfZeus")]
