@@ -45,7 +45,7 @@ namespace PersonaBackend.Controllers
 
                 //TODO check  request data VALIDATE
                 _chronos.SetSimulationStartDate(request.StartDate);
-                //await _awsManagerService.PutParameterAsync("/simulation/starting_date", request.StartDate);
+                await _awsManagerService.PutParameterAsync("/simulation/date", request.StartDate);
 
                 //at the end first.
                 //await _awsManagerService.EnableSchedule("sim-schedule", true);
@@ -91,49 +91,21 @@ namespace PersonaBackend.Controllers
 
                     personaIDs.Add(i);
 
-                    //TODO call labour people to get job
-                    //TODO call insure LIFE and HEALTH
+                    //todoretial bank USE DAILY EVENT INSTEAD
+                    //TODO call labour people to get job USE DAILY EVENT INSTEAD
+                    //TODO call insure LIFE and HEALTH USE DAILY EVENT INSTEAD
                     //TODO get house rent/buy - see salary?
-                    //TODO buy first food and electronic we know we have 1000
                 }
 
                 // Call retail bank to open account and deposit 1000 starting amount
-                var requestData = new { PersonaIds = personaIDs };
-                var json = JsonConvert.SerializeObject(requestData);
-                var content = new StringContent(json, Encoding.UTF8, "application/json");
-                var response = await _httpClient.PostAsync("https://api.retailbank.projects.bbdgrad.com/api.customers", content);
-                if (!response.IsSuccessStatusCode)
-                {
-                    return StatusCode((int)response.StatusCode, new ApiResponse<bool> { Data = false, Message = "Failed to create persona accounts at the retail bank." });
-                }
-
-                // Create the request body for Health Insurance
-                var healthInsuranceRequestData = personaIDs.Select(id => new
-                {
-                    PersonaID = id,
-                    Dependents = new List<int>()
-                }).ToList();
-                var healthInsuranceJson = JsonConvert.SerializeObject(healthInsuranceRequestData);
-                var healthInsuranceContent = new StringContent(healthInsuranceJson, Encoding.UTF8, "application/json");
-                var healthInsuranceResponse = await _httpClient.PostAsync("https://api.healthinsurance.projects.bbdgrad.com/api.customers", healthInsuranceContent);
-                if (!healthInsuranceResponse.IsSuccessStatusCode)
-                {
-                    return StatusCode((int)healthInsuranceResponse.StatusCode, new ApiResponse<bool> { Data = false, Message = "Failed to register personas with health insurance." });
-                }
-
-                // Create the request body for Life Insurance
-                var lifeInsuranceRequestData = personaIDs.Select(id => new
-                {
-                    PersonaID = id,
-                    Dependents = new List<int>()
-                }).ToList();
-                var lifeInsuranceJson = JsonConvert.SerializeObject(healthInsuranceRequestData);
-                var lifeInsuranceContent = new StringContent(healthInsuranceJson, Encoding.UTF8, "application/json");
-                var lifeInsuranceResponse = await _httpClient.PostAsync("https://api.lifeinsurance.projects.bbdgrad.com/api.customers", healthInsuranceContent);
-                if (!lifeInsuranceResponse.IsSuccessStatusCode)
-                {
-                    return StatusCode((int)lifeInsuranceResponse.StatusCode, new ApiResponse<bool> { Data = false, Message = "Failed to register personas with life insurance." });
-                }
+                //var requestData = new { PersonaIds = personaIDs };
+                //var json = JsonConvert.SerializeObject(requestData);
+                //var content = new StringContent(json, Encoding.UTF8, "application/json");
+                //var response = await _httpClient.PostAsync("https://api.retailbank.projects.bbdgrad.com/api.customers", content);
+                //if (!response.IsSuccessStatusCode)
+                //{
+                //    return StatusCode((int)response.StatusCode, new ApiResponse<bool> { Data = false, Message = "Failed to create persona accounts at the retail bank." });
+                //}
 
                 await _dbContext.Personas.AddRangeAsync(personas);
                 await _dbContext.EventsOccurred.AddRangeAsync(events);
