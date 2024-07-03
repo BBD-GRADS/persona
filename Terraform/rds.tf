@@ -88,8 +88,7 @@ module "rds" {
   publicly_accessible    = true
 
   db_name  = var.db_name
-  username = "keeganoreilly"
-  password = "password"
+  username = var.db_username
   port     = "5432"
 
   tags = {
