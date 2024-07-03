@@ -1,4 +1,5 @@
 ﻿using PersonaBackend.Interfaces;
+using PersonaBackend.Models.Persona.PersonaRequests;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -27,5 +28,10 @@ namespace PersonaBackend.Models.Persona
 
         [Column("date_bought", TypeName = "varchar(10)")]
         public string DateBought { get; set; }
+
+        public static implicit operator StockItem(PersonaStocks v)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

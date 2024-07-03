@@ -19,6 +19,7 @@ namespace PersonaBackend
             // Add services to the container.
             builder.Services.AddSingleton(AWSManagerService.Instance);
             builder.Services.AddSingleton(Chronos.Instance);
+            builder.Services.AddHttpClient();
 
             // Add CORS policy
             builder.Services.AddCors(options =>
@@ -78,11 +79,11 @@ namespace PersonaBackend
             var app = builder.Build();
 
             // Configure the HTTP request pipeline.
-            if (app.Environment.IsDevelopment())
-            {
-                app.UseSwagger();
-                app.UseSwaggerUI();
-            }
+            //if (app.Environment.IsDevelopment())
+            //{
+            app.UseSwagger();
+            app.UseSwaggerUI();
+            //}
 
             app.UseHttpsRedirection();
 
