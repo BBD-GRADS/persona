@@ -47,9 +47,6 @@ namespace PersonaBackend.Controllers
                 _chronos.SetSimulationStartDate(request.StartDate);
                 await _awsManagerService.PutParameterAsync("/simulation/date", request.StartDate);
 
-                //at the end first.
-                //await _awsManagerService.EnableSchedule("sim-schedule", true);
-
                 if (request.NumberOfPersonas < 1 || request.NumberOfPersonas > 50000)
                 {
                     return BadRequest(new ApiResponse<bool> { Data = false, Message = "Invalid request. The number of personas must be between 1 and 50,000." });
@@ -110,7 +107,9 @@ namespace PersonaBackend.Controllers
 
                 await _dbContext.SaveChangesAsync();
 
-                return Ok(new ApiResponse<bool> { Data = true, Message = $"Simulation started successfully with {request.NumberOfPersonas} persona records" });
+                await _awsManagerService.EnableSchedule("sim-schedule", true);
+
+                return Ok(new ApiResponse<bool> { Success = true, Data = true, Message = $"Simulation started successfully with {request.NumberOfPersonas} persona records" });
             }
             catch (Exception ex)
             {
