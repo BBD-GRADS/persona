@@ -60,7 +60,6 @@ namespace PersonaBackend.Controllers
                 {
                     var persona = new Persona
                     {
-                        Id = i,
                         NextOfKinId = null,
                         PartnerId = null,
                         ParentId = null,
@@ -73,16 +72,8 @@ namespace PersonaBackend.Controllers
                         NumElectronicsOwned = 0,
                         //HomeOwningStatusId = 0, //default? TODO make enum add a status here later
                     };
-                    var eventOccurred = new EventOccurred
-                    {
-                        PersonaId1 = persona.Id,
-                        PersonaId2 = persona.Id,
-                        EventId = (int)EventTypeEnum.Adult,
-                        DateOccurred = request.StartDate
-                    };
 
                     personas.Add(persona);
-                    events.Add(eventOccurred);
 
                     personaIDs.Add(i);
 
@@ -103,12 +94,29 @@ namespace PersonaBackend.Controllers
                 //}
 
                 await _dbContext.Personas.AddRangeAsync(personas);
-                await _dbContext.EventsOccurred.AddRangeAsync(events);
+
+                await _dbContext.SaveChangesAsync();
+
+                var newPersonasIds = await _dbContext.Personas
+                .Select(p => p.Id)
+                .ToListAsync();
+
+                foreach (var personaId in newPersonasIds)
+                {
+                    var eventOccurred = new EventOccurred
+                    {
+                        PersonaId1 = personaId,
+                        PersonaId2 = personaId,
+                        EventId = (int)EventTypeEnum.Adult,
+                        DateOccurred = request.StartDate
+                    };
+
+                    _dbContext.EventsOccurred.Add(eventOccurred);
+                }
 
                 await _dbContext.SaveChangesAsync();
 
                 await _awsManagerService.EnableSchedule("sim-schedule", true);
-
                 return Ok(new ApiResponse<bool> { Success = true, Data = true, Message = $"Simulation started successfully with {request.NumberOfPersonas} persona records" });
             }
             catch (Exception ex)
@@ -120,7 +128,7 @@ namespace PersonaBackend.Controllers
 
         private async Task DeleteAllDataAsync()
         {
-            _dbContext.StockItems.RemoveRange(_dbContext.StockItems);
+            //_dbContext.StockItems.RemoveRange(_dbContext.StockItems);
             _dbContext.FoodItems.RemoveRange(_dbContext.FoodItems);
             _dbContext.EventsOccurred.RemoveRange(_dbContext.EventsOccurred);
             _dbContext.Personas.RemoveRange(_dbContext.Personas);

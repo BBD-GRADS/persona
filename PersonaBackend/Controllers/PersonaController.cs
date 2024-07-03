@@ -287,9 +287,8 @@ namespace PersonaBackend.Controllers
         {
             try
             {
-                var totalBirths = await _dbContext.EventsOccurred
-                    .Where(e => e.EventId == (int)EventTypeEnum.Born)
-                    .Select(s => s.PersonaId1).ToListAsync();
+                var totalBirths = await _dbContext.Personas
+                    .Select(s => s.BirthFormatTime != null).ToListAsync();
 
                 var response = new ApiResponse<long>
                 {
