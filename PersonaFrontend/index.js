@@ -94,7 +94,6 @@ function isEmpty(input) {
 
 function addEventBox()
 {
-    console.log("BOI");
     const listNode = document.createElement("li");
     const detailsTextNode = document.createTextNode(currEventDetails);
     const timeTextNode = document.createTextNode(currEventTime);
@@ -104,7 +103,6 @@ function addEventBox()
 
     h4Node.appendChild(detailsTextNode);
     pNode.appendChild(timeTextNode);
-    console.log("here>");
 
     listNode.appendChild(h4Node);
     listNode.appendChild(pNode);
