@@ -194,6 +194,34 @@ namespace PersonaBackend.Controllers
         }
 
         /// <summary>
+        /// Retrieves all persons, dead and alive.
+        /// </summary>
+        [HttpGet("getAlivePersonasIDs")]
+        //[ApiKeyAuthFilter("HandOfZeus")]
+        [ProducesResponseType(typeof(ApiResponse<PersonaIdList>), 200)]
+        //[SwaggerResponseExample(200, typeof(ApiResponsePersonaIdListEmptyExample))]
+        public async Task<IActionResult> getAlivePersonasIDs()
+        {
+            try
+            {
+                var allPersonas = await _dbContext.Personas.Where(p => p.Alive.Equals(true)).Select(s => s.Id).ToListAsync();
+
+                var response = new ApiResponse<PersonaIdList>
+                {
+                    Success = true,
+                    Message = "List of all Personas alive",
+                    Data = new PersonaIdList { PersonaIds = allPersonas }
+                };
+
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                return HandleException(ex);
+            }
+        }
+
+        /// <summary>
         /// Retrieves all childless personas.
         /// </summary>
         [HttpGet("getChildlessPersonas")]
