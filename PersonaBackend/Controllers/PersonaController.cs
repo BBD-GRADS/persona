@@ -9,6 +9,7 @@ using PersonaBackend.Models.Responses;
 using PersonaBackend.Utils;
 using Swashbuckle.AspNetCore.Annotations;
 using Swashbuckle.AspNetCore.Filters;
+using System.Globalization;
 
 namespace PersonaBackend.Controllers
 {
@@ -143,7 +144,6 @@ namespace PersonaBackend.Controllers
         [HttpGet("getAllPersonas")]
         //[ApiKeyAuthFilter("HandOfZeus")]
         [ProducesResponseType(typeof(ApiResponse<PersonaList>), 200)]
-        //[SwaggerResponseExample(200, typeof(ApiResponsePersonaIdListEmptyExample))]
         public async Task<IActionResult> GetAllPersonas()
         {
             try
@@ -171,7 +171,6 @@ namespace PersonaBackend.Controllers
         [HttpGet("getAllPersonaID")]
         //[ApiKeyAuthFilter("HandOfZeus")]
         [ProducesResponseType(typeof(ApiResponse<PersonaIdList>), 200)]
-        //[SwaggerResponseExample(200, typeof(ApiResponsePersonaIdListEmptyExample))]
         public async Task<IActionResult> GetAllPersonasID()
         {
             try
@@ -199,7 +198,6 @@ namespace PersonaBackend.Controllers
         [HttpGet("getChildlessPersonas")]
         //[ApiKeyAuthFilter("HandOfZeus")]
         [ProducesResponseType(typeof(ApiResponse<PersonaIdList>), 200)]
-        //[SwaggerResponseExample(200, typeof(ApiResponsePersonaIdListEmptyExample))]
         public async Task<IActionResult> GetChildlessPersonas()
         {
             try
@@ -227,7 +225,6 @@ namespace PersonaBackend.Controllers
         /// </summary>
         [HttpGet("getSinglePersonas")]
         [ProducesResponseType(typeof(ApiResponse<PersonaIdList>), 200)]
-        //[ApiKeyAuthFilter("HandOfZeus")]
         public async Task<IActionResult> GetSinglePersonas()
         {
             try
@@ -274,7 +271,7 @@ namespace PersonaBackend.Controllers
 
                 return Ok(response);
             }
-            catch(Exception ex) 
+            catch (Exception ex)
             {
                 return HandleException(ex);
             }
@@ -285,7 +282,6 @@ namespace PersonaBackend.Controllers
         /// </summary>
         [HttpGet("Births")]
         [ProducesResponseType(typeof(ApiResponse<long>), 200)]
-        //[SwaggerResponseExample(200, typeof(ApiResponsePersonaIdListEmptyExample))]
         public async Task<IActionResult> GetTotalBirths()
         {
             try
@@ -313,7 +309,6 @@ namespace PersonaBackend.Controllers
         /// </summary>
         [HttpGet("DeadPersons")]
         [ProducesResponseType(typeof(ApiResponse<PersonaList>), 200)]
-        //[SwaggerResponseExample(200, typeof(ApiResponsePersonaIdListEmptyExample))]
         public async Task<IActionResult> GetDeceasedPersons()
         {
             try
@@ -342,7 +337,6 @@ namespace PersonaBackend.Controllers
         /// </summary>
         [HttpGet("hasDied")]
         [ProducesResponseType(typeof(ApiResponse<PersonaIdList>), 200)]
-        //[SwaggerResponseExample(200, typeof(ApiResponsePersonaIdListEmptyExample))]
         public async Task<IActionResult> HasDied(string startDate, string endDate = null)
         {
             try
@@ -352,10 +346,14 @@ namespace PersonaBackend.Controllers
                     endDate = startDate;
                 }
 
-                var diedPersonas = await _dbContext.EventsOccurred
-                    .Where(e => e.EventId == (int)EventTypeEnum.Died && DateTime.Parse(e.DateOccurred) >= DateTime.Parse(startDate) && DateTime.Parse(e.DateOccurred) <= DateTime.Parse(endDate))
-                    .Select(e => e.PersonaId1)
+                var events = await _dbContext.EventsOccurred
+                    .Where(e => e.EventId == (int)EventTypeEnum.Died)
                     .ToListAsync();
+
+                var diedPersonas = events
+                    .Where(e => _chronos.CompareDates(e.DateOccurred, startDate) >= 0 && _chronos.CompareDates(e.DateOccurred, endDate) <= 0)
+                    .Select(e => e.PersonaId1)
+                    .ToList();
 
                 var response = new ApiResponse<PersonaIdList>
                 {
@@ -387,10 +385,14 @@ namespace PersonaBackend.Controllers
                     endDate = startDate;
                 }
 
-                var adultPersonas = await _dbContext.EventsOccurred
-                    .Where(e => e.EventId == (int)EventTypeEnum.Adult && DateTime.Parse(e.DateOccurred) >= DateTime.Parse(startDate) && DateTime.Parse(e.DateOccurred) <= DateTime.Parse(endDate))
-                    .Select(e => e.PersonaId1)
+                var events = await _dbContext.EventsOccurred
+                    .Where(e => e.EventId == (int)EventTypeEnum.Adult)
                     .ToListAsync();
+
+                var adultPersonas = events
+                    .Where(e => _chronos.CompareDates(e.DateOccurred, startDate) >= 0 && _chronos.CompareDates(e.DateOccurred, endDate) <= 0)
+                    .Select(e => e.PersonaId1)
+                    .ToList();
 
                 var response = new ApiResponse<PersonaIdList>
                 {
@@ -412,7 +414,6 @@ namespace PersonaBackend.Controllers
         /// </summary>
         [HttpGet("gotMarried")]
         [ProducesResponseType(typeof(ApiResponse<PersonaMarriageList>), 200)]
-        //[SwaggerResponseExample(200, typeof(ApiResponseMarriedPairExample))]
         public async Task<IActionResult> GotMarried(string startDate, string endDate = null)
         {
             try
@@ -422,14 +423,18 @@ namespace PersonaBackend.Controllers
                     endDate = startDate;
                 }
 
-                var marriedPersonas = await _dbContext.EventsOccurred
-                    .Where(e => e.EventId == (int)EventTypeEnum.Married && DateTime.Parse(e.DateOccurred) >= DateTime.Parse(startDate) && DateTime.Parse(e.DateOccurred) <= DateTime.Parse(endDate))
+                var events = await _dbContext.EventsOccurred
+                    .Where(e => e.EventId == (int)EventTypeEnum.Married)
+                    .ToListAsync();
+
+                var marriedPersonas = events
+                    .Where(e => _chronos.CompareDates(e.DateOccurred, startDate) >= 0 && _chronos.CompareDates(e.DateOccurred, endDate) <= 0)
                     .Select(e => new PersonaMarriagePair
                     {
                         FirstPerson = e.PersonaId1,
                         SecondPerson = e.PersonaId2
                     })
-                    .ToListAsync();
+                    .ToList();
 
                 var response = new ApiResponse<PersonaMarriageList>
                 {
@@ -454,7 +459,6 @@ namespace PersonaBackend.Controllers
         /// </summary>
         [HttpGet("hadChild")]
         [ProducesResponseType(typeof(ApiResponse<ParentChildList>), 200)]
-        //[SwaggerResponseExample(200, typeof(ApiResponseChildPairExample))]
         public async Task<IActionResult> HadChild(string startDate, string endDate = null)
         {
             try
@@ -464,10 +468,18 @@ namespace PersonaBackend.Controllers
                     endDate = startDate;
                 }
 
-                var parentChildPairs = await _dbContext.EventsOccurred
-                    .Where(e => e.EventId == (int)EventTypeEnum.Born && DateTime.Parse(e.DateOccurred) >= DateTime.Parse(startDate) && DateTime.Parse(e.DateOccurred) <= DateTime.Parse(endDate))
-                    .Select(s => s.PersonaId1)
+                var events = await _dbContext.EventsOccurred
+                    .Where(e => e.EventId == (int)EventTypeEnum.Born)
                     .ToListAsync();
+
+                var parentChildPairs = events
+                    .Where(e => _chronos.CompareDates(e.DateOccurred, startDate) >= 0 && _chronos.CompareDates(e.DateOccurred, endDate) <= 0)
+                    .Select(e => new ParentChildPair
+                    {
+                        Parent = e.PersonaId1,
+                        Child = e.PersonaId2
+                    })
+                    .ToList();
 
                 var response = new ApiResponse<ParentChildList>
                 {
@@ -475,7 +487,7 @@ namespace PersonaBackend.Controllers
                     Message = "Parent-child relationships retrieved",
                     Data = new ParentChildList
                     {
-                       patentChildIds = parentChildPairs
+                        ParentChildPairs = parentChildPairs.ToList()
                     }
                 };
 
@@ -500,11 +512,9 @@ namespace PersonaBackend.Controllers
             {
                 try
                 {
-                    var timeNow = DateTime.Now;
-
                     var newChild = new Persona
                     {
-                        BirthFormatTime = timeNow.ToString("yy|MM|dd"),
+                        BirthFormatTime = _chronos.GetCurrentDateString(),
                         ParentId = request.ParentId,
                         Hunger = 0,
                         Health = 100,
@@ -523,7 +533,7 @@ namespace PersonaBackend.Controllers
                         PersonaId1 = request.ParentId,
                         PersonaId2 = newChild.Id,
                         EventId = (int)EventTypeEnum.Born,
-                        DateOccurred = timeNow.ToString("yy|MM|dd")
+                        DateOccurred = _chronos.GetCurrentDateString()
                     };
 
                     _dbContext.EventsOccurred.Add(eventOccurred);
@@ -548,13 +558,11 @@ namespace PersonaBackend.Controllers
             }
         }
 
-
         /// <summary>
         /// Get all stocks related to a persona by id
         /// </summary>
         [HttpGet("getPersonaStocks")]
         [ProducesResponseType(typeof(ApiResponse<StockItem>), 200)]
-        //[SwaggerResponseExample(200, typeof(ApiResponseChildPairExample))]
         public async Task<IActionResult> GetPersonaStocks(long persona_id)
         {
             try

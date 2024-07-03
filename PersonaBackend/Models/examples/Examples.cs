@@ -58,22 +58,6 @@ namespace PersonaBackend.Models.examples
         }
     }
 
-    public class ApiResponseChildPairExample : IExamplesProvider<ApiResponse<ParentChildList>>
-    {
-        public ApiResponse<ParentChildList> GetExamples()
-        {
-            return new ApiResponse<ParentChildList>
-            {
-                Data = new ParentChildList
-                {
-                     patentChildIds = [1, 2, 3, 4, 5, 6, 7]
-                },
-                Message = "Successfully retrieved parent-child relationships",
-                Success = true
-            };
-        }
-    }
-
     public class ApiResponseStringExample : IExamplesProvider<ApiResponse<string>>
     {
         public ApiResponse<string> GetExamples()

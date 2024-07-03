@@ -184,12 +184,17 @@ namespace PersonaBackend.Controllers
             {
                 try
                 {
+                    var parentIds = request.ParentChildPairs?.Select(pair => pair.Parent).ToList();
+
+                    if (parentIds == null || !parentIds.Any())
+                    {
+                        throw new Exception();
+                    }
+
                     var parentsExist = await _dbContext.Personas
-                        .Where(p => request.patentChildIds.Contains(p.Id) && p.Alive.Equals(true))
+                        .Where(p => parentIds.Contains(p.Id) && p.Alive)
                         .Select(p => p.Id)
                         .ToListAsync();
-
-                    var timeNow = DateTime.Now;
 
                     var eventsToAdd = new List<EventOccurred>();
 
@@ -197,7 +202,7 @@ namespace PersonaBackend.Controllers
                     {
                         var newChild = new Persona
                         {
-                            BirthFormatTime = timeNow.ToString("yy|MM|dd"),
+                            BirthFormatTime = _chronos.GetCurrentDateString(),
                             ParentId = parentId,
                             Hunger = 0,
                             Health = 100,
@@ -217,7 +222,7 @@ namespace PersonaBackend.Controllers
                             PersonaId1 = parentId,
                             PersonaId2 = childId,
                             EventId = (int)EventTypeEnum.Born,
-                            DateOccurred = timeNow.ToString("yy|MM|dd")
+                            DateOccurred = _chronos.GetCurrentDateString(),
                         };
 
                         eventsToAdd.Add(eventOccurred);
@@ -266,13 +271,12 @@ namespace PersonaBackend.Controllers
                         _dbContext.Personas.Update(persona);
                     }
 
-                    var timeNow = DateTime.Now;
                     var eventsToAdd = personas.Select(persona => new EventOccurred
                     {
                         PersonaId1 = persona.Id,
                         PersonaId2 = persona.Id,
                         EventId = (int)EventTypeEnum.Died,
-                        DateOccurred = timeNow.ToString("yy|MM|dd")
+                        DateOccurred = _chronos.GetCurrentDateString(),
                     }).ToList();
 
                     _dbContext.EventsOccurred.AddRange(eventsToAdd);
@@ -296,7 +300,6 @@ namespace PersonaBackend.Controllers
                 }
             }
         }
-
 
         [HttpPost("marryPersonas")]
         [ProducesResponseType(typeof(ApiResponse<bool>), StatusCodes.Status200OK)]
@@ -340,13 +343,12 @@ namespace PersonaBackend.Controllers
                         }
                     }
 
-                    var timeNow = DateTime.Now;
                     var eventsToAdd = request.MarriagePairs.Select(pair => new EventOccurred
                     {
                         PersonaId1 = pair.FirstPerson,
                         PersonaId2 = pair.SecondPerson,
-                        EventId = (int)EventTypeEnum.Married, 
-                        DateOccurred = timeNow.ToString("yy|MM|dd")
+                        EventId = (int)EventTypeEnum.Married,
+                        DateOccurred = _chronos.GetCurrentDateString()
                     }).ToList();
 
                     _dbContext.EventsOccurred.AddRange(eventsToAdd);
@@ -370,6 +372,5 @@ namespace PersonaBackend.Controllers
                 }
             }
         }
-
     }
 }
