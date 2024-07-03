@@ -20,6 +20,7 @@ CREATE TABLE
       "birth_format_time" varchar(10),
       "hunger" integer,
       "health" integer,
+      "adult" boolean,
       "days_starving" integer,
       "alive" boolean,
       "sick" boolean,
