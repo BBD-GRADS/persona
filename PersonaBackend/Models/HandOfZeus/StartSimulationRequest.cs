@@ -9,7 +9,6 @@ namespace PersonaBackend.Models.HandOfZeus
 
         public int NumberOfPersonas { get; set; } = 1000;
 
-        /// <example>00|01|01</example>
-        public string StartDate { get; set; } = "00|01|01";
+        public DateTime StartDate { get; set; }
     }
 }

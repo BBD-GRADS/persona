@@ -287,9 +287,8 @@ namespace PersonaBackend.Controllers
         {
             try
             {
-                var totalBirths = await _dbContext.EventsOccurred
-                    .Where(e => e.EventId == (int)EventTypeEnum.Born)
-                    .Select(s => s.PersonaId1).ToListAsync();
+                var totalBirths = await _dbContext.Personas
+                    .Select(s => s.BirthFormatTime != null).ToListAsync();
 
                 var response = new ApiResponse<long>
                 {
@@ -503,7 +502,7 @@ namespace PersonaBackend.Controllers
 
                 var newChild = new Persona
                 {
-                    BirthFormatTime = timeNow.ToString(),
+                    BirthFormatTime = timeNow.ToString("yy|MM|dd"),
                     ParentId = parent_id,
                     Hunger = 0, 
                     Health = 100, 
@@ -535,7 +534,7 @@ namespace PersonaBackend.Controllers
         /// <summary>
         /// Get all stocks related to a persona by id
         /// </summary>
-        [HttpPost("getPersonaStocks")]
+        [HttpGet("getPersonaStocks")]
         [ProducesResponseType(typeof(ApiResponse<StockItem>), 200)]
         //[SwaggerResponseExample(200, typeof(ApiResponseChildPairExample))]
         public async Task<IActionResult> GetPersonaStocks(long persona_id)

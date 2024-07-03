@@ -159,8 +159,7 @@ namespace PersonaBackend.Utils
             {
                 var ageInDays = _chronos.getAge(persona.BirthFormatTime);
 
-                //if (ageInDays >= 6 * 30) TODO replace
-                if (ageInDays >= 2)
+                if (ageInDays >= 6 * 30)
                 {
                     persona.Adult = true;
 
