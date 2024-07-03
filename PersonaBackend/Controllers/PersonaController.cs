@@ -498,7 +498,7 @@ namespace PersonaBackend.Controllers
 
                 var newChild = new Persona
                 {
-                    BirthFormatTime = timeNow.ToString(),
+                    BirthFormatTime = timeNow.ToString("yy|MM|dd"),
                     ParentId = parent_id,
                     Hunger = 0, 
                     Health = 100, 
@@ -530,7 +530,7 @@ namespace PersonaBackend.Controllers
         /// <summary>
         /// Get all stocks related to a persona by id
         /// </summary>
-        [HttpPost("getPersonaStocks")]
+        [HttpGet("getPersonaStocks")]
         [ProducesResponseType(typeof(ApiResponse<StockItem>), 200)]
         //[SwaggerResponseExample(200, typeof(ApiResponseChildPairExample))]
         public async Task<IActionResult> GetPersonaStocks(long persona_id)
