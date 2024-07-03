@@ -52,10 +52,10 @@ namespace PersonaBackend.Utils
         }
 
         // Method to set the simulation start date from a string in "YY|MM|DD" format
-        public void SetSimulationStartDate(string date)
+        public void SetSimulationStartDate(DateTime date)
         {
-            simulationStartDate = DateTime.UtcNow;
-            simulationStartDateString = date;
+            simulationStartDate = date;
+            simulationStartDateString = "01|01|01";
         }
 
         public string GetCurrentDateString()
