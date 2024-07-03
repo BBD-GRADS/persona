@@ -45,7 +45,8 @@ namespace PersonaBackend.Controllers
 
                 //TODO check  request data VALIDATE
                 _chronos.SetSimulationStartDate(request.StartDate);
-                await _awsManagerService.PutParameterAsync("/simulation/date", request.StartDate);
+
+                await _awsManagerService.PutParameterAsync("/simulation/date", _chronos.GetCurrentDateString());
 
                 if (request.NumberOfPersonas < 1 || request.NumberOfPersonas > 50000)
                 {
@@ -63,7 +64,7 @@ namespace PersonaBackend.Controllers
                         NextOfKinId = null,
                         PartnerId = null,
                         ParentId = null,
-                        BirthFormatTime = request.StartDate,
+                        BirthFormatTime = _chronos.GetCurrentDateString(),
                         Hunger = 0,
                         Health = 100,
                         Alive = true,
@@ -108,7 +109,7 @@ namespace PersonaBackend.Controllers
                         PersonaId1 = personaId,
                         PersonaId2 = personaId,
                         EventId = (int)EventTypeEnum.Adult,
-                        DateOccurred = request.StartDate
+                        DateOccurred = _chronos.GetCurrentDateString()
                     };
 
                     _dbContext.EventsOccurred.Add(eventOccurred);
