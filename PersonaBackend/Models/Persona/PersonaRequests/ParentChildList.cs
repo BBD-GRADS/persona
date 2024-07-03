@@ -2,6 +2,6 @@
 {
     public class ParentChildList
     {
-        public List<ParentChildPair> ParentChildren { get; set; }
+        public List<long>? patentChildIds { get; set; }
     }
 }
