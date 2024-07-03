@@ -5,10 +5,7 @@ namespace PersonaBackend.Models.HandOfZeus
 {
     public class StartSimulationRequest
     {
-        /// <example>1000</example>
-
-        public int NumberOfPersonas { get; set; } = 1000;
-
-        public DateTime StartDate { get; set; }
+        public string action { get; set; }
+        public DateTime startTime { get; set; }
     }
 }
