@@ -1,5 +1,5 @@
 -- Connect to the database
-\connect persona_db;
+\connect personadb;
 
 CREATE TABLE
    IF NOT EXISTS FoodInventory (
