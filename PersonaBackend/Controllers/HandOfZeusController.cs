@@ -48,6 +48,8 @@ namespace PersonaBackend.Controllers
             {
                 if (request.action == "reset")
                 {
+                    await _awsManagerService.EnableSchedule("sim-schedule", false);
+
                     await DeleteAllDataAsync();
                     return Ok(new ApiResponse<bool> { Success = true, Data = true, Message = $"Simulation reset successfully" });
                 }
@@ -90,14 +92,14 @@ namespace PersonaBackend.Controllers
                 }
 
                 // Call retail bank to open account and deposit 1000 starting amount
-                //var requestData = new { PersonaIds = personaIDs };
-                //var json = JsonConvert.SerializeObject(requestData);
-                //var content = new StringContent(json, Encoding.UTF8, "application/json");
-                //var response = await _httpClient.PostAsync("https://api.retailbank.projects.bbdgrad.com/api.customers", content);
-                //if (!response.IsSuccessStatusCode)
-                //{
-                //    return StatusCode((int)response.StatusCode, new ApiResponse<bool> { Data = false, Message = "Failed to create persona accounts at the retail bank." });
-                //}
+                var requestData = new { PersonaIds = personaIDs };
+                var json = JsonConvert.SerializeObject(requestData);
+                var content = new StringContent(json, Encoding.UTF8, "application/json");
+                var response = await _httpClient.PostAsync("https://api.retailbank.projects.bbdgrad.com/api/customers", content);
+                if (!response.IsSuccessStatusCode)
+                {
+                    // return StatusCode((int)response.StatusCode, new ApiResponse<bool> { Data = false, Message = "Failed to create persona accounts at the retail bank." });
+                }
 
                 await _dbContext.Personas.AddRangeAsync(personas);
 
