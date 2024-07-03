@@ -17,14 +17,15 @@ namespace PersonaBackend.Controllers
     {
         private readonly Context _dbContext;
         private readonly Chronos _chronos;
+        private readonly HttpClient _httpClient;
         private readonly PersonaService _personaService;
         private readonly AWSManagerService _awsManagerService;
 
-        public PersonaController(Context dbContext, Chronos chronos, AWSManagerService aWSManagerService)
+        public PersonaController(Context dbContext, Chronos chronos, HttpClient httpClient, AWSManagerService aWSManagerService)
         {
             _dbContext = dbContext;
             _chronos = chronos;
-            _personaService = new PersonaService(dbContext, chronos);
+            _personaService = new PersonaService(dbContext, chronos, httpClient);
             _awsManagerService = aWSManagerService;
         }
 
@@ -62,6 +63,7 @@ namespace PersonaBackend.Controllers
                     persona.Hunger = 100;
                     _personaService.UpdatePersonaFoodStorage(persona);
                     _personaService.EatFood(persona);
+                    // buy item
                     _personaService.BuyItems(persona);
                 }
                 _dbContext.UpdateRange(alivePersonas);
