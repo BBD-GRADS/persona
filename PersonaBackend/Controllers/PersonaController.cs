@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Amazon.Runtime.Internal;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using PersonaBackend.Data;
 using PersonaBackend.Models.examples;
@@ -17,12 +18,14 @@ namespace PersonaBackend.Controllers
         private readonly Context _dbContext;
         private readonly Chronos _chronos;
         private readonly PersonaService _personaService;
+        private readonly AWSManagerService _awsManagerService;
 
-        public PersonaController(Context dbContext, Chronos chronos)
+        public PersonaController(Context dbContext, Chronos chronos, AWSManagerService aWSManagerService)
         {
             _dbContext = dbContext;
             _chronos = chronos;
             _personaService = new PersonaService(dbContext, chronos);
+            _awsManagerService = aWSManagerService;
         }
 
         private IActionResult HandleException(Exception ex)
@@ -35,6 +38,8 @@ namespace PersonaBackend.Controllers
         {
             try
             {
+                await _awsManagerService.PutParameterAsync("/simulation/date", _chronos.GetCurrentDateString());
+
                 var alivePersonas = await _dbContext.Personas
                     .Where(p => p.Alive)
                     .Include(p => p.FoodInventory)
