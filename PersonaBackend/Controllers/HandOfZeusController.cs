@@ -41,29 +41,30 @@ namespace PersonaBackend.Controllers
         {
             try
             {
-                await DeleteAllDataAsync();
+                if (request.action == "reset")
+                {
+                    await DeleteAllDataAsync();
+                    return Ok(new ApiResponse<bool> { Success = true, Data = true, Message = $"Simulation reset successfully" });
+                }
 
                 //TODO check  request data VALIDATE
-                _chronos.SetSimulationStartDate(request.StartDate);
-                await _awsManagerService.PutParameterAsync("/simulation/date", request.StartDate);
+                _chronos.SetSimulationStartDate(request.startTime);
+                var numberOfPersonas = 1000;
 
-                if (request.NumberOfPersonas < 1 || request.NumberOfPersonas > 50000)
-                {
-                    return BadRequest(new ApiResponse<bool> { Data = false, Message = "Invalid request. The number of personas must be between 1 and 50,000." });
-                }
+                await _awsManagerService.PutParameterAsync("/simulation/date", _chronos.GetCurrentDateString());
 
                 var personas = new List<Persona>();
                 var events = new List<EventOccurred>();
                 var personaIDs = new List<long>();
 
-                for (int i = 0; i < request.NumberOfPersonas; i++)
+                for (int i = 0; i < numberOfPersonas; i++)
                 {
                     var persona = new Persona
                     {
                         NextOfKinId = null,
                         PartnerId = null,
                         ParentId = null,
-                        BirthFormatTime = request.StartDate,
+                        BirthFormatTime = _chronos.GetCurrentDateString(),
                         Hunger = 0,
                         Health = 100,
                         Alive = true,
@@ -108,7 +109,7 @@ namespace PersonaBackend.Controllers
                         PersonaId1 = personaId,
                         PersonaId2 = personaId,
                         EventId = (int)EventTypeEnum.Adult,
-                        DateOccurred = request.StartDate
+                        DateOccurred = _chronos.GetCurrentDateString()
                     };
 
                     _dbContext.EventsOccurred.Add(eventOccurred);
@@ -117,7 +118,7 @@ namespace PersonaBackend.Controllers
                 await _dbContext.SaveChangesAsync();
 
                 await _awsManagerService.EnableSchedule("sim-schedule", true);
-                return Ok(new ApiResponse<bool> { Success = true, Data = true, Message = $"Simulation started successfully with {request.NumberOfPersonas} persona records" });
+                return Ok(new ApiResponse<bool> { Success = true, Data = true, Message = $"Simulation started successfully with {numberOfPersonas} persona records" });
             }
             catch (Exception ex)
             {
