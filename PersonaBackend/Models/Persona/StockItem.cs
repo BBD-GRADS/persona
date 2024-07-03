@@ -14,14 +14,8 @@ namespace PersonaBackend.Models.Persona
         [Column("persona_id")]
         public long PersonaId { get; set; }
 
-        [ForeignKey("PersonaId")]
-        public virtual Persona Persona { get; set; }
-
         [Column("business_id")]
         public int BusinessId { get; set; }
-
-        [ForeignKey("BusinessId")]
-        public virtual Business Business { get; set; }
 
         [Column("num_stocks")]
         public int NumStocks { get; set; }
