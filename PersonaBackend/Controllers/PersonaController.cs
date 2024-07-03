@@ -66,6 +66,10 @@ namespace PersonaBackend.Controllers
                     _personaService.EatFood(persona);
                     // buy item
                     _personaService.BuyItems(persona);
+
+                    if(persona.Sick){
+                       _personaService.sendSickPersonToHealthcare(persona);
+                    }
                 }
                 _dbContext.UpdateRange(alivePersonas);
                 await _dbContext.SaveChangesAsync();

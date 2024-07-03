@@ -58,7 +58,7 @@ namespace PersonaBackend.Utils
                 var response = await _httpClient.GetAsync($"https://api.sustenance.projects.bbdgrad.com/api/Buy?consumerId={persona.Id}");
                 // if (!response.IsSuccessStatusCode)
                 // {
-                   // return; // StatusCode((int)response.StatusCode, new ApiResponse<bool> { Data = false, Message = "Failed to create persona accounts at the retail bank." });
+                // return; // StatusCode((int)response.StatusCode, new ApiResponse<bool> { Data = false, Message = "Failed to create persona accounts at the retail bank." });
                 // }
 
                 for (int i = 0; i < numberOfFoodItemsToAdd; i++)
@@ -87,7 +87,7 @@ namespace PersonaBackend.Utils
                 var responseElectronics = await _httpClient.PostAsync("https://service.electronics.projects.bbdgrad.com/store/order", electronicsContent);
                 // if (!responseElectronics.IsSuccessStatusCode)
                 // {
-                   // return; // StatusCode((int)response.StatusCode, new ApiResponse<bool> { Data = false, Message = "Failed to create persona accounts at the retail bank." });
+                // return; // StatusCode((int)response.StatusCode, new ApiResponse<bool> { Data = false, Message = "Failed to create persona accounts at the retail bank." });
                 // }
 
                 persona.NumElectronicsOwned += numberOfElectronicsToAdd;
@@ -209,6 +209,28 @@ namespace PersonaBackend.Utils
                 {
                     persona.Adult = true;
 
+                    Random random = new Random();
+                    int random_choice = random.Next(1, 3);
+                    int random_capacity = random.Next(1, 9);
+                    if (random_choice == 1)
+                    {
+                        var requestBuyHouseData = new { buyerId = persona.Id, numUnits = random_capacity };
+                        var requestBuyHouseJson = JsonConvert.SerializeObject(requestBuyHouseData);
+                        var houseContent = new StringContent(requestBuyHouseJson, Encoding.UTF8, "application/json");
+                        var housePost = _httpClient.PostAsync("https://api.sales.projects.bbdgrad.com/api/buy", houseContent);
+
+                    }
+                    else if (random_choice == 2)
+                    {
+                        var requestRentHouseData = new { buyerId = persona.Id, numUnits = random_capacity };
+                        var requestRentHouseJson = JsonConvert.SerializeObject(requestRentHouseData);
+                        var houseContent = new StringContent(requestRentHouseJson, Encoding.UTF8, "application/json");
+                        var rentPost = _httpClient.PostAsync("https://api.rentals.projects.bbdgrad.com/api/rentals", houseContent);
+                    }
+
+
+
+
                     var eventOccurred = new EventOccurred
                     {
                         PersonaId1 = persona.Id,
@@ -227,5 +249,26 @@ namespace PersonaBackend.Utils
                 throw new Exception($"Error updating persona to adult: {ex.Message}", ex);
             }
         }
+
+        public void sendSickPersonToHealthcare(Persona persona)
+        {
+            try
+            {
+
+                var requestData = new { personaId = persona.Id };
+                var requestJson = JsonConvert.SerializeObject(requestData);
+                var sickPersonaIdContent = new StringContent(requestJson, Encoding.UTF8, "application/json");
+                var housePost = _httpClient.PostAsync("https://api.care.projects.bbdgrad.com/api/patient", sickPersonaIdContent);
+        
+                persona.Sick = false;
+                _dbContext.Personas.Update(persona); // Update persona in DbContext
+                                                     // _dbContext.SaveChanges();
+            
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Error updating persona to adult: {ex.Message}", ex);
+    }
+}
     }
 }
