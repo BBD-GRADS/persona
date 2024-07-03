@@ -24,8 +24,5 @@ namespace PersonaBackend.Models.Persona
 
         [Column("persona_id")]
         public long PersonaId { get; set; }
-
-        [ForeignKey("PersonaId")]
-        public virtual Persona Persona { get; set; }
     }
 }

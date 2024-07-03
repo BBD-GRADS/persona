@@ -13,6 +13,7 @@ namespace PersonaBackend.Utils
         [JsonPropertyName("balanceInMibiBBDough")]
         public decimal BalanceInMibiBBDough { get; set; }
     }
+
     public class PersonaService
     {
         private readonly Context _dbContext;
@@ -49,9 +50,8 @@ namespace PersonaBackend.Utils
                 // var customerAccounts = System.Text.Json.JsonSerializer.Deserialize<List<CustomerAccount>>(content, options);
                 // var balance = customerAccounts?.FirstOrDefault()?.BalanceInMibiBBDough ?? 0;
 
-
                 //talk to retailer
-                int numberOfFoodItemsToAdd = 1; // 3
+                int numberOfFoodItemsToAdd = 3;
                 List<FoodItem> foodItemsToAdd = new List<FoodItem>();
 
                 var requestData = new { consumerId = persona.Id };

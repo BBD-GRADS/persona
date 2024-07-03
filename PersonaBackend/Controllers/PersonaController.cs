@@ -7,6 +7,7 @@ using PersonaBackend.Models.Persona;
 using PersonaBackend.Models.Persona.PersonaRequests;
 using PersonaBackend.Models.Responses;
 using PersonaBackend.Utils;
+using Swashbuckle.AspNetCore.Annotations;
 using Swashbuckle.AspNetCore.Filters;
 
 namespace PersonaBackend.Controllers
@@ -181,6 +182,34 @@ namespace PersonaBackend.Controllers
                 {
                     Success = true,
                     Message = "List of all Personas",
+                    Data = new PersonaIdList { PersonaIds = allPersonas }
+                };
+
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                return HandleException(ex);
+            }
+        }
+
+        /// <summary>
+        /// Retrieves all persons, dead and alive.
+        /// </summary>
+        [HttpGet("getAlivePersonasIDs")]
+        //[ApiKeyAuthFilter("HandOfZeus")]
+        [ProducesResponseType(typeof(ApiResponse<PersonaIdList>), 200)]
+        //[SwaggerResponseExample(200, typeof(ApiResponsePersonaIdListEmptyExample))]
+        public async Task<IActionResult> getAlivePersonasIDs()
+        {
+            try
+            {
+                var allPersonas = await _dbContext.Personas.Where(p => p.Alive.Equals(true)).Select(s => s.Id).ToListAsync();
+
+                var response = new ApiResponse<PersonaIdList>
+                {
+                    Success = true,
+                    Message = "List of all Personas alive",
                     Data = new PersonaIdList { PersonaIds = allPersonas }
                 };
 
@@ -497,11 +526,7 @@ namespace PersonaBackend.Controllers
 
                 var parentChildPairs = await _dbContext.EventsOccurred
                     .Where(e => e.EventId == (int)EventTypeEnum.Born && DateTime.Parse(e.DateOccurred) >= DateTime.Parse(startDate) && DateTime.Parse(e.DateOccurred) <= DateTime.Parse(endDate))
-                    .Select(e => new ParentChildPair
-                    {
-                        ParentId = e.PersonaId1,
-                        ChildId = e.PersonaId2
-                    })
+                    .Select(s => s.PersonaId1)
                     .ToListAsync();
 
                 var response = new ApiResponse<ParentChildList>
@@ -510,7 +535,7 @@ namespace PersonaBackend.Controllers
                     Message = "Parent-child relationships retrieved",
                     Data = new ParentChildList
                     {
-                        ParentChildren = parentChildPairs.ToList()
+                       patentChildIds = parentChildPairs
                     }
                 };
 
@@ -523,47 +548,66 @@ namespace PersonaBackend.Controllers
         }
 
         /// <summary>
-        /// Post parent id to create a new child
+        /// Creates a new child persona with the specified parent ID.
         /// </summary>
+        /// <param name="request">Request object containing parent ID.</param>
         [HttpPost("makeNewChild")]
-        [ProducesResponseType(typeof(ApiResponse<Persona>), 200)]
-        //[SwaggerResponseExample(200, typeof(ApiResponseChildPairExample))]
-        public async Task<IActionResult> MakeNewChild(long parent_id)
+        [ProducesResponseType(typeof(ApiResponse<Persona>), StatusCodes.Status200OK)]
+        [SwaggerResponse(StatusCodes.Status200OK, "New child persona created successfully", typeof(ApiResponse<Persona>))]
+        public async Task<IActionResult> MakeNewChild([FromBody] MakeNewChildRequest request)
         {
-            try
+            using (var transaction = _dbContext.Database.BeginTransaction())
             {
-                var timeNow = DateTime.Now;
-
-                var newChild = new Persona
+                try
                 {
-                    BirthFormatTime = timeNow.ToString("yy|MM|dd"),
-                    ParentId = parent_id,
-                    Hunger = 0, 
-                    Health = 100, 
-                    Adult = false,
-                    Alive = true, 
-                    Sick = false,
-                    NumElectronicsOwned = 0, 
-                    HomeOwningStatusId = null 
-                };
+                    var timeNow = DateTime.Now;
 
-                _dbContext.Personas.Add(newChild);
-                await _dbContext.SaveChangesAsync();
+                    var newChild = new Persona
+                    {
+                        BirthFormatTime = timeNow.ToString("yy|MM|dd"),
+                        ParentId = request.ParentId,
+                        Hunger = 0,
+                        Health = 100,
+                        Adult = false,
+                        Alive = true,
+                        Sick = false,
+                        NumElectronicsOwned = 0,
+                        HomeOwningStatusId = null
+                    };
 
-                var response = new ApiResponse<Persona>
+                    _dbContext.Personas.Add(newChild);
+                    await _dbContext.SaveChangesAsync();
+
+                    var eventOccurred = new EventOccurred
+                    {
+                        PersonaId1 = request.ParentId,
+                        PersonaId2 = newChild.Id,
+                        EventId = (int)EventTypeEnum.Born,
+                        DateOccurred = timeNow.ToString("yy|MM|dd")
+                    };
+
+                    _dbContext.EventsOccurred.Add(eventOccurred);
+                    await _dbContext.SaveChangesAsync();
+
+                    transaction.Commit();
+
+                    var response = new ApiResponse<Persona>
+                    {
+                        Success = true,
+                        Message = "New child persona created successfully",
+                        Data = newChild
+                    };
+
+                    return Ok(response);
+                }
+                catch (Exception ex)
                 {
-                    Success = true,
-                    Message = "New child persona created successfully",
-                    Data = newChild
-                };
-
-                return Ok(response);
-            }
-            catch (Exception ex)
-            {
-                return HandleException(ex);
+                    transaction.Rollback();
+                    return HandleException(ex);
+                }
             }
         }
+
 
         /// <summary>
         /// Get all stocks related to a persona by id

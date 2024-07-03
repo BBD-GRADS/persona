@@ -2,6 +2,6 @@
 {
     public class PersonaMarriageList
     {
-        public List<PersonaMarriagePair> MarriagePairs { get; set; }
+        public List<PersonaMarriagePair>? MarriagePairs { get; set; }
     }
 }
