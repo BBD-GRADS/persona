@@ -2,7 +2,7 @@ name: Deploy New App Version (Backend)
 
 on:
   push:
-    branches: ["testing_api_deploy"]
+    branches: ["testing_api_deploy_new"]
   pull_request:
     branches: ["main"]
     paths:
