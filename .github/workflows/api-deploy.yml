@@ -2,9 +2,7 @@ name: Deploy New App Version (Backend)
 
 on:
   push:
-    branches: ["testing_flyway_migrate"]
-    paths:
-      - "PersonaBackend/**"
+    branches: ["testing_api_deploy"]
   pull_request:
     branches: ["main"]
     paths:
