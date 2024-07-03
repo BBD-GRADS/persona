@@ -1,6 +1,4 @@
 -- Connect to the database
-\connect personadb;
-
 CREATE TABLE
    IF NOT EXISTS FoodInventory (
       id INTEGER PRIMARY KEY,
