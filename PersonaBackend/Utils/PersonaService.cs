@@ -54,14 +54,12 @@ namespace PersonaBackend.Utils
                 int numberOfFoodItemsToAdd = 3;
                 List<FoodItem> foodItemsToAdd = new List<FoodItem>();
 
-                //var requestData = new { personaId = persona.Id };
-                //var json = JsonConvert.SerializeObject(requestData);
-                //var content = new StringContent(json, Encoding.UTF8, "application/json");
-                //var response = await _httpClient.PostAsync("https://foodretail-app.eu-west-1.elasticbeanstalk.com/api/Buy", content);
-                //if (!response.IsSuccessStatusCode)
-                //{
-                //   return; // StatusCode((int)response.StatusCode, new ApiResponse<bool> { Data = false, Message = "Failed to create persona accounts at the retail bank." });
-                //}
+                var requestData = new { consumerId = persona.Id };
+                var response = await _httpClient.GetAsync($"https://api.sustenance.projects.bbdgrad.com/api/Buy?consumerId={persona.Id}");
+                // if (!response.IsSuccessStatusCode)
+                // {
+                   // return; // StatusCode((int)response.StatusCode, new ApiResponse<bool> { Data = false, Message = "Failed to create persona accounts at the retail bank." });
+                // }
 
                 for (int i = 0; i < numberOfFoodItemsToAdd; i++)
                 {
@@ -83,14 +81,14 @@ namespace PersonaBackend.Utils
                 //talk to retailer
 
                 int numberOfElectronicsToAdd = 2;
-                //var requestElectronicsData = new { personaId = persona.Id, quantity = numberOfElectronicsToAdd };
-                //var electronicsJson = JsonConvert.SerializeObject(requestElectronicsData);
-                //var electronicsContent = new StringContent(electronicsJson, Encoding.UTF8, "application/json");
-                //var responseElectronics = await _httpClient.PostAsync("https://service.electronics.projects.bbdgrad.com/store/order", electronicsContent);
-                //if (!responseElectronics.IsSuccessStatusCode)
-                //{
-                //   return; // StatusCode((int)response.StatusCode, new ApiResponse<bool> { Data = false, Message = "Failed to create persona accounts at the retail bank." });
-                //}
+                var requestElectronicsData = new { customerId = persona.Id, quantity = numberOfElectronicsToAdd };
+                var electronicsJson = JsonConvert.SerializeObject(requestElectronicsData);
+                var electronicsContent = new StringContent(electronicsJson, Encoding.UTF8, "application/json");
+                // var responseElectronics = await _httpClient.PostAsync("https://service.electronics.projects.bbdgrad.com/store/order", electronicsContent);
+                // if (!responseElectronics.IsSuccessStatusCode)
+                // {
+                   // return; // StatusCode((int)response.StatusCode, new ApiResponse<bool> { Data = false, Message = "Failed to create persona accounts at the retail bank." });
+                // }
 
                 persona.NumElectronicsOwned += numberOfElectronicsToAdd;
 
