@@ -84,7 +84,7 @@ namespace PersonaBackend.Utils
                 var requestElectronicsData = new { customerId = persona.Id, quantity = numberOfElectronicsToAdd };
                 var electronicsJson = JsonConvert.SerializeObject(requestElectronicsData);
                 var electronicsContent = new StringContent(electronicsJson, Encoding.UTF8, "application/json");
-                // var responseElectronics = await _httpClient.PostAsync("https://service.electronics.projects.bbdgrad.com/store/order", electronicsContent);
+                var responseElectronics = await _httpClient.PostAsync("https://service.electronics.projects.bbdgrad.com/store/order", electronicsContent);
                 // if (!responseElectronics.IsSuccessStatusCode)
                 // {
                    // return; // StatusCode((int)response.StatusCode, new ApiResponse<bool> { Data = false, Message = "Failed to create persona accounts at the retail bank." });
