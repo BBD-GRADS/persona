@@ -66,13 +66,7 @@ namespace PersonaBackend.Models.examples
             {
                 Data = new ParentChildList
                 {
-                    ParentChildren = new List<ParentChildPair>
-                    {
-                        new ParentChildPair { ParentId = 1, ChildId = 22 },
-                        new ParentChildPair { ParentId = 1, ChildId = 32 },
-                        new ParentChildPair { ParentId = 4, ChildId = 38 },
-                        new ParentChildPair { ParentId = 8, ChildId = 9 }
-                    }
+                     patentChildIds = [1, 2, 3, 4, 5, 6, 7]
                 },
                 Message = "Successfully retrieved parent-child relationships",
                 Success = true

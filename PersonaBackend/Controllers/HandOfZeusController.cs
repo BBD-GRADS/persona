@@ -34,6 +34,11 @@ namespace PersonaBackend.Controllers
             _httpClient = httpClient;
         }
 
+        private IActionResult HandleException(Exception ex)
+        {
+            return StatusCode(500, $"An error occurred: {ex.Message}");
+        }
+
         [HttpPost("startSimulation")]
         [ProducesResponseType(typeof(ApiResponse<bool>), StatusCodes.Status200OK)]
         [SwaggerResponse(StatusCodes.Status200OK, "Simulation started successfully", typeof(ApiResponse<bool>))]
@@ -149,7 +154,7 @@ namespace PersonaBackend.Controllers
             try
             {
                 var personas = await _dbContext.Personas
-                                              .Where(p => request.PersonaIds.Contains(p.Id))
+                                              .Where(p => request.PersonaIds.Contains(p.Id) && p.Alive.Equals(true))
                                               .ToListAsync();
 
                 foreach (var persona in personas)
@@ -173,34 +178,70 @@ namespace PersonaBackend.Controllers
         [SwaggerResponse(StatusCodes.Status200OK, "Child assigned to parent personas successfully", typeof(ApiResponse<bool>))]
         public async Task<IActionResult> GivePersonasChild([FromBody] ParentChildList request)
         {
-            try
+            using (var transaction = _dbContext.Database.BeginTransaction())
             {
-                var childPersonaIds = request.ParentChildren.Select(pc => pc.ChildId).ToList();
-                var parentPersonas = await _dbContext.Personas
-                    .Where(p => request.ParentChildren.Any(pc => pc.ParentId == p.Id) || childPersonaIds.Contains(p.Id))
-                    .ToListAsync();
-
-                foreach (var parentChildPair in request.ParentChildren)
+                try
                 {
-                    var childPersona = await _dbContext.Personas.FindAsync(parentChildPair.ChildId);
-                    if (childPersona != null)
+                    var parentsExist = await _dbContext.Personas
+                        .Where(p => request.patentChildIds.Contains(p.Id) && p.Alive.Equals(true))
+                        .Select(p => p.Id)
+                        .ToListAsync();
+
+                    var timeNow = DateTime.Now;
+
+                    var eventsToAdd = new List<EventOccurred>();
+
+                    foreach (var parentId in parentsExist)
                     {
-                        childPersona.ParentId = parentChildPair.ParentId;
-                        _dbContext.Personas.Update(childPersona);
+                        var newChild = new Persona
+                        {
+                            BirthFormatTime = timeNow.ToString("yy|MM|dd"),
+                            ParentId = parentId,
+                            Hunger = 0,
+                            Health = 100,
+                            Adult = false,
+                            Alive = true,
+                            Sick = false,
+                            NumElectronicsOwned = 0,
+                            HomeOwningStatusId = null
+                        };
+
+                        _dbContext.Personas.Add(newChild);
+
+                        var childId = newChild.Id;
+
+                        var eventOccurred = new EventOccurred
+                        {
+                            PersonaId1 = parentId,
+                            PersonaId2 = childId,
+                            EventId = (int)EventTypeEnum.Born,
+                            DateOccurred = timeNow.ToString("yy|MM|dd")
+                        };
+
+                        eventsToAdd.Add(eventOccurred);
                     }
-                    else
+
+                    await _dbContext.SaveChangesAsync();
+
+                    _dbContext.EventsOccurred.AddRange(eventsToAdd);
+                    await _dbContext.SaveChangesAsync();
+
+                    transaction.Commit();
+
+                    var response = new ApiResponse<bool>
                     {
-                        return NotFound($"Persona with ID {parentChildPair.ChildId} not found");
-                    }
+                        Success = true,
+                        Message = $" ${parentsExist.Count()} Personas birth has been recorded successfully",
+                        Data = true,
+                    };
+
+                    return Ok(response);
                 }
-
-                await _dbContext.SaveChangesAsync();
-
-                return Ok(new ApiResponse<bool> { Data = true, Message = $"Child persona assigned to Parent persona/s with ID/s: {string.Join(",", request.ParentChildren.Select(pc => pc.ParentId))}" });
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, new ApiResponse<bool> { Data = false, Message = $"An error occurred: {ex.Message}" });
+                catch (Exception ex)
+                {
+                    transaction.Rollback();
+                    return HandleException(ex);
+                }
             }
         }
 
@@ -209,76 +250,124 @@ namespace PersonaBackend.Controllers
         [SwaggerResponse(StatusCodes.Status200OK, "Personas killed successfully", typeof(ApiResponse<bool>))]
         public async Task<IActionResult> KillPersonas([FromBody] PersonaIdList request)
         {
-            try
+            using (var transaction = _dbContext.Database.BeginTransaction())
             {
-                var personas = await _dbContext.Personas
-                                              .Where(p => request.PersonaIds.Contains(p.Id))
-                                              .ToListAsync();
-
-                foreach (var persona in personas)
+                try
                 {
-                    persona.Alive = false;
-                    _dbContext.Personas.Update(persona);
+                    var personas = await _dbContext.Personas
+                                                  .Where(p => request.PersonaIds.Contains(p.Id) && p.Alive.Equals(true))
+                                                  .ToListAsync();
+
+                    foreach (var persona in personas)
+                    {
+                        persona.Alive = false;
+                        _dbContext.Personas.Update(persona);
+                    }
+
+                    var timeNow = DateTime.Now;
+                    var eventsToAdd = personas.Select(persona => new EventOccurred
+                    {
+                        PersonaId1 = persona.Id,
+                        PersonaId2 = persona.Id,
+                        EventId = (int)EventTypeEnum.Died,
+                        DateOccurred = timeNow.ToString("yy|MM|dd")
+                    }).ToList();
+
+                    _dbContext.EventsOccurred.AddRange(eventsToAdd);
+                    await _dbContext.SaveChangesAsync();
+
+                    transaction.Commit();
+
+                    var response = new ApiResponse<bool>
+                    {
+                        Success = true,
+                        Message = "Personas death successfully recorded",
+                        Data = true,
+                    };
+
+                    return Ok(response);
                 }
-
-                await _dbContext.SaveChangesAsync();
-
-                return Ok(new ApiResponse<bool> { Data = true, Message = $"Personas with IDs {string.Join(",", request.PersonaIds)} killed" });
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, new ApiResponse<bool> { Data = false, Message = $"An error occurred: {ex.Message}" });
+                catch (Exception ex)
+                {
+                    transaction.Rollback();
+                    return HandleException(ex);
+                }
             }
         }
+
 
         [HttpPost("marryPersonas")]
         [ProducesResponseType(typeof(ApiResponse<bool>), StatusCodes.Status200OK)]
         [SwaggerResponse(StatusCodes.Status200OK, "Personas married successfully", typeof(ApiResponse<bool>))]
         public async Task<IActionResult> MarryPersonas([FromBody] PersonaMarriageList request)
         {
-            try
+            using (var transaction = _dbContext.Database.BeginTransaction())
             {
-                if (request.MarriagePairs == null || !request.MarriagePairs.Any())
+                try
                 {
-                    return BadRequest("MarriagePairs list cannot be null or empty.");
+                    if (request.MarriagePairs == null || !request.MarriagePairs.Any())
+                    {
+                        return BadRequest("MarriagePairs list cannot be null or empty.");
+                    }
+
+                    var personaIds = request.MarriagePairs
+                                         .SelectMany(pair => new[] { pair.FirstPerson, pair.SecondPerson })
+                                         .Distinct()
+                                         .ToList();
+
+                    var personas = await _dbContext.Personas
+                                                  .Where(p => personaIds.Contains(p.Id) && p.Alive.Equals(true))
+                                                  .ToListAsync();
+
+                    foreach (var pair in request.MarriagePairs)
+                    {
+                        var firstPerson = personas.FirstOrDefault(p => p.Id == pair.FirstPerson);
+                        var secondPerson = personas.FirstOrDefault(p => p.Id == pair.SecondPerson);
+
+                        if (firstPerson != null && secondPerson != null)
+                        {
+                            firstPerson.PartnerId = secondPerson.Id;
+                            secondPerson.PartnerId = firstPerson.Id;
+
+                            _dbContext.Personas.Update(firstPerson);
+                            _dbContext.Personas.Update(secondPerson);
+                        }
+                        else
+                        {
+                            return NotFound($"One or more personas in the marriage pair not found.");
+                        }
+                    }
+
+                    var timeNow = DateTime.Now;
+                    var eventsToAdd = request.MarriagePairs.Select(pair => new EventOccurred
+                    {
+                        PersonaId1 = pair.FirstPerson,
+                        PersonaId2 = pair.SecondPerson,
+                        EventId = (int)EventTypeEnum.Married, 
+                        DateOccurred = timeNow.ToString("yy|MM|dd")
+                    }).ToList();
+
+                    _dbContext.EventsOccurred.AddRange(eventsToAdd);
+                    await _dbContext.SaveChangesAsync();
+
+                    transaction.Commit();
+
+                    var response = new ApiResponse<bool>
+                    {
+                        Success = true,
+                        Message = $"${personaIds.Count()} Personas have been married successfully",
+                        Data = true,
+                    };
+
+                    return Ok(response);
                 }
-
-                var personaIds = request.MarriagePairs
-                                     .SelectMany(pair => new[] { pair.FirstPerson, pair.SecondPerson })
-                                     .Distinct()
-                                     .ToList();
-
-                var personas = await _dbContext.Personas
-                                              .Where(p => personaIds.Contains(p.Id))
-                                              .ToListAsync();
-
-                foreach (var pair in request.MarriagePairs)
+                catch (Exception ex)
                 {
-                    var firstPerson = personas.FirstOrDefault(p => p.Id == pair.FirstPerson);
-                    var secondPerson = personas.FirstOrDefault(p => p.Id == pair.SecondPerson);
-
-                    if (firstPerson != null && secondPerson != null)
-                    {
-                        firstPerson.PartnerId = secondPerson.Id;
-                        secondPerson.PartnerId = firstPerson.Id;
-
-                        _dbContext.Personas.Update(firstPerson);
-                        _dbContext.Personas.Update(secondPerson);
-                    }
-                    else
-                    {
-                        return NotFound($"One or more personas in the marriage pair not found.");
-                    }
+                    transaction.Rollback();
+                    return HandleException(ex);
                 }
-
-                await _dbContext.SaveChangesAsync();
-
-                return Ok(new ApiResponse<bool> { Data = true, Message = $"Married {request.MarriagePairs.Count} pairs of personas." });
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, new ApiResponse<bool> { Data = false, Message = $"An error occurred: {ex.Message}" });
             }
         }
+
     }
 }
