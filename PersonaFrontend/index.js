@@ -1,13 +1,16 @@
+import {ApiHelper } from "./apiHelper.js";
+
 let currentPersona = -1;
+const baseURL = "https://api.persona.projects.bbdgrad.com/api";
+const stockURL = "https://api.mese.projects.bbdgrad.com";
 
 let addChildButton = document.getElementById("spawnChildbtn");
-let marryPersonasButton = document.getElementById("marryPersonasBtn");
-let checkResidentsButton = document.getElementById("checkResidentsBtn");
 let buyFoodButton = document.getElementById("buyFoodBtn");
 let buyElectronicButton = document.getElementById("buyElectronicBtn");
 let buyStockButton = document.getElementById("buyStockBtn");
 let sellStockButton = document.getElementById("sellStockBtn");
 let checkStockButton = document.getElementById("checkStockBtn");
+let refreshDataButton = document.getElementById("refreshData");
 
 
 let personaSearchButton = document.getElementById("pSearchButton");
@@ -16,7 +19,6 @@ let sellStockInput = document.getElementById("sellStockInput");
 
 let personaIDTitle = document.getElementById("personaIDTitle");
 
-let testAddEventButton = document.getElementById("testAddEvent");
 
 let nextOfKin = document.getElementById("nextOfKin");
 let partner = document.getElementById("partner");
@@ -34,18 +36,43 @@ let adult = document.getElementById("adult");
 
 
 addChildButton.addEventListener("click",spawnChild);
-checkResidentsButton.addEventListener("click",checkResidents);
 buyFoodButton.addEventListener("click",buyFood);
 buyElectronicButton.addEventListener("click",buyElectronic);
 buyStockButton.addEventListener("click",buyStock);
 sellStockButton.addEventListener("click",sellStock);
 personaSearchButton.addEventListener("click",searchForPersona);
 checkStockButton.addEventListener("click",checkStock);
+refreshDataButton.addEventListener("click",populateDataBlocks);
+
+let aliveValue = document.getElementById("aliveValue");
+let deceasedValue = document.getElementById("deceasedValue");
+let birthsValue = document.getElementById("birthsValue");
+let marriagesValue = document.getElementById("marriagesValue");
+
 
 
 personaIDTitle.innerText = "Currently viewing Persona ID: " + currentPersona;
+populateDataBlocks();
 
-function searchForPersona()
+
+
+async function populateDataBlocks()
+{
+    let personaAliveData = ((await getAlivePersonas()).data);
+    aliveValue.innerText = personaAliveData.personas.length;
+
+    let personaDeceasedData = ((await getDeadPersonas()).data)
+    deceasedValue.innerText = personaDeceasedData.personas.length;
+
+    let personaBirthsData = ((await getBirthedPersonas()).data)
+    birthsValue.innerText = (personaBirthsData - 1000);
+
+    let personaMarriagesData = ((await getMarriedPersonas()).data)
+    marriagesValue.innerText = personaMarriagesData;
+
+}
+
+async function searchForPersona()
 {
     if(isEmpty(searchInput.value))
         {
@@ -53,15 +80,25 @@ function searchForPersona()
         }
         else
         {
-            updatePersonaDetails(searchInput.value,personaTestObj);
-            
+        //updatePersonaDetails(searchInput.value,personaTestObj);
+        console.log(await getPersona(searchInput.value));
+        let personaObject = (await getPersona(searchInput.value));
+        if(personaObject != undefined)
+            {
+                updatePersonaDetails(searchInput.value,personaObject.data);
+            }
         }
 
 }
 
-function spawnChild()
+async function spawnChild()
 {
-    populateResponseBlock("Spawned a child for persona " + currentPersona);
+    if(currentPersona != -1 )
+    {
+        await makeChild(currentPersona);
+        populateResponseBlock("Spawned a child for persona " + currentPersona);
+    }
+    
 }
 
 
@@ -137,4 +174,128 @@ function isEmpty(input) {
     return !input.trim().length;
 }
 
-personaTestObj = JSON.parse('{"id": 2,"parent_id": 1,"partner_id": 3,"next_of_kin_id": 5,"birth_date": "01|10|19","hunger": 88,"health": 100,"alive": true,"sick": false,"num_electronics_owned": 3,"home_owning_status": "owner","num_food_items": 5,"num_stocks_owned": 3,"adult": true}')
+//personaTestObj = JSON.parse('{"id": 2,"parent_id": 1,"partner_id": 3,"next_of_kin_id": 5,"birth_date": "01|10|19","hunger": 88,"health": 100,"alive": true,"sick": false,"num_electronics_owned": 3,"home_owning_status": "owner","num_food_items": 5,"num_stocks_owned": 3,"adult": true}')
+
+
+async function getPersona(id) {
+    const apiHelper = new ApiHelper(baseURL);
+      let persona = "";
+    
+      try {
+        const response = await apiHelper.get('/Persona/' + id);
+          
+        if (response) {
+          persona = response;
+        }
+      } catch (error) {
+        console.error('Error performing CRUD operation:', error);
+      }
+      
+      return persona;
+      
+    }
+
+async function getAlivePersonas() {
+    const apiHelper = new ApiHelper(baseURL);
+        let alivePersonas = [];
+    
+        try {
+        const response = await apiHelper.get('/Persona/getAlivePersonas');
+            
+        if (response) {
+            alivePersonas = response;
+        }
+        } catch (error) {
+        console.error('Error performing CRUD operation:', error);
+        }
+        
+        return alivePersonas;
+        
+    }
+
+async function getDeadPersonas() {
+    const apiHelper = new ApiHelper(baseURL);
+        let deadPersonas = [];
+    
+        try {
+        const response = await apiHelper.get('/Persona/DeadPersons');
+            
+        if (response) {
+            deadPersonas = response;
+        }
+        } catch (error) {
+        console.error('Error performing CRUD operation:', error);
+        }
+        
+        return deadPersonas;  
+    }
+
+async function getBirthedPersonas() {
+    const apiHelper = new ApiHelper(baseURL);
+        let birthedPersonas = [];
+    
+        try {
+        const response = await apiHelper.get('/Persona/Births');
+            
+        if (response) {
+            birthedPersonas = response;
+        }
+        } catch (error) {
+        console.error('Error performing CRUD operation:', error);
+        }
+        
+        return birthedPersonas;
+        
+    }
+
+async function getMarriedPersonas() {
+    const apiHelper = new ApiHelper(baseURL);
+        let marriedPersonas = [];
+    
+        try {
+        const response = await apiHelper.get('/Persona/Married');
+            
+        if (response) {
+            marriedPersonas = response;
+        }
+        } catch (error) {
+        console.error('Error performing CRUD operation:', error);
+        }
+        
+        return marriedPersonas;
+    }
+
+                
+
+async function makeChild(id) {
+    const apiHelper = new ApiHelper(baseURL);
+    try {
+      const response = await apiHelper.post('Persona/makeNewChild?parent_id=' + id);
+      console.log(response);
+      // console.log('TimeTrackItem successfully added:', response);
+    } catch (error) {
+      console.error('Error performing CRUD operation:', error);
+    }
+  }
+  
+
+  async function buyStocks() {
+    const apiHelper = new ApiHelper(stockURL);
+    try {
+      const response = await apiHelper.post('/stocks/buy' + id);
+      console.log(response);
+      // console.log('TimeTrackItem successfully added:', response);
+    } catch (error) {
+      console.error('Error performing CRUD operation:', error);
+    }
+  }
+
+  async function postNewNoteToDB(noteObject) {
+    const apiHelper = new ApiHelper(baseUrl);
+    try {
+      const response = await apiHelper.post('/create/notes', noteObject);
+      // console.log('Note successfully added:', response);
+    } catch (error) {
+      console.error('Error performing CRUD operation:', error);
+    }
+  }
