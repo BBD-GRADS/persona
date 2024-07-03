@@ -21,7 +21,18 @@ h1{
     column-gap: 1rem;
     row-gap: 0.5rem;
 }
+.endpointsAndResponseHolder{
+    display: flex;
+    flex-direction: row;
+}
 
+.responseHolder{
+    background-color: rgb(104, 104, 104);
+    margin: 1rem;
+    padding: 0.5rem;
+    border-radius: 0.5rem;
+    width: 20rem
+}
 .personaDetailsList li{
     background-color: rgb(104, 104, 104);
     border-radius: 0.5rem;
@@ -57,7 +68,7 @@ h1{
 
 .headerItems{
     display: flex;
-    justify-content: space-between;
+    gap: 1rem;
 }
 
 .personaStatsSection{
