@@ -67,8 +67,9 @@ namespace PersonaBackend.Controllers
                     // buy item
                     _personaService.BuyItems(persona);
 
-                    if(persona.Sick){
-                       _personaService.sendSickPersonToHealthcare(persona);
+                    if (persona.Sick)
+                    {
+                        _personaService.sendSickPersonToHealthcare(persona);
                     }
                 }
                 _dbContext.UpdateRange(alivePersonas);
@@ -338,7 +339,7 @@ namespace PersonaBackend.Controllers
 
                 return Ok(response);
             }
-            catch(Exception ex) 
+            catch (Exception ex)
             {
                 return HandleException(ex);
             }
@@ -539,7 +540,7 @@ namespace PersonaBackend.Controllers
                     Message = "Parent-child relationships retrieved",
                     Data = new ParentChildList
                     {
-                       patentChildIds = parentChildPairs
+                        patentChildIds = parentChildPairs
                     }
                 };
 
@@ -644,6 +645,23 @@ namespace PersonaBackend.Controllers
             {
                 return HandleException(ex);
             }
+        }
+
+
+        [HttpPost("buyHouseSuccess")]
+        public async Task<IActionResult> BuyHouseSuccess([FromBody] long personaId, bool isSuccess)
+        {
+            if (isSuccess)
+            {
+                await _personaService.updateHouseOwningStatusAsync(personaId, 2);
+
+            }
+            else
+            {
+                // do nothing, home status still homeless
+            }
+            return Ok();
+
         }
     }
 }

@@ -259,16 +259,29 @@ namespace PersonaBackend.Utils
                 var requestJson = JsonConvert.SerializeObject(requestData);
                 var sickPersonaIdContent = new StringContent(requestJson, Encoding.UTF8, "application/json");
                 var housePost = _httpClient.PostAsync("https://api.care.projects.bbdgrad.com/api/patient", sickPersonaIdContent);
-        
+
                 persona.Sick = false;
                 _dbContext.Personas.Update(persona); // Update persona in DbContext
                                                      // _dbContext.SaveChanges();
-            
+
             }
             catch (Exception ex)
             {
                 throw new Exception($"Error updating persona to adult: {ex.Message}", ex);
-    }
-}
+            }
+        }
+
+        public async Task updateHouseOwningStatusAsync(long personaId, int HomeOwningStatusId)
+        {
+            var alivePersonas = await _dbContext.Personas
+                    .Where(p => p.Id == personaId)
+                    .ToListAsync();
+
+            foreach (var persona in alivePersonas) // workaround
+            {
+                persona.HomeOwningStatusId = HomeOwningStatusId;
+                _dbContext.Personas.Update(persona);
+            }
+        }
     }
 }
