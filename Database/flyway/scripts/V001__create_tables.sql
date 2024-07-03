@@ -54,7 +54,7 @@ CREATE TABLE
    "EventsOccurred" (
       "id" bigserial PRIMARY KEY,
       "event_id" int REFERENCES "EventTypes" ("id") ON DELETE SET NULL,
-      "persona_id_1" bigint ON DELETE SET NULL,
-      "persona_id_2" bigint ON DELETE SET NULL,
+      "persona_id_1" bigint,
+      "persona_id_2" bigint,
       "date_occurred" varchar(10)
    );
