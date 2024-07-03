@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="styles.css">
+    <title>Persona Manager</title>
+</head>
+<body>
+    <header class="headerItems">
+        <section>
+        <h1>Persona Manager <button>Logout</button></h1>
+        <h2 id="personaIDTitle">Currently viewing Persona ID: None</h2>
+        <section>
+            <label for="pSearch">Search for a Persona ID: </label>
+            <input type="number" id="pSearch" name="pSearch">
+            <button id="pSearchButton">Search</button>
+        </section>
+    </section>
+    <section class="personaStatsSection">
+        <h2>Personas Stats</h2>
+        <ul class="personaDetailsList">
+            <li>
+                <article>
+                    <h3>
+                        Persona Population (Alive)
+                    </h3>
+                    <p>
+                        198290
+                    </p>
+                </article>
+            </li>
+            <li>
+                <article>
+                    <h3>
+                        Deceased
+                    </h3>
+                    <p>
+                        3312
+                    </p>
+                </article>
+            </li>
+        </ul>
+    </section>
+    </header>
+    <section>
+        <h2>Persona Details</h2>
+        <ul class="personaDetailsList">
+            <li>
+                <article>
+                    <h3>
+                        Next of Kin
+                    </h3>
+                    <p id="nextOfKin">
+                        NextOfKinID
+                    </p>
+                </article>
+            </li>
+            <li>
+                <article>
+                    <h3>
+                        Partner
+                    </h3>
+                    <p id="partner">
+                        partnerID
+                    </p>
+                </article>
+            </li>
+            <li>
+                <article>
+                    <h3>
+                        Parent
+                    </h3>
+                    <p id="parent">
+                        parentID
+                    </p>
+                </article>
+            </li>
+            <li>
+                <article>
+                    <h3>
+                        Birth Time
+                    </h3>
+                    <p id="birthTime">
+                        BirthTimeValue
+                    </p>
+                </article>
+            </li>
+            <li>
+                <article>
+                    <h3>
+                        Hunger
+                    </h3>
+                    <p id="hunger">
+                        hungerValue
+                    </p>
+                </article>
+            </li>
+            <li>
+                <article>
+                    <h3>
+                        Health
+                    </h3>
+                    <p id="health">
+                        healthValue
+                    </p>
+                </article>
+            </li>
+            <li>
+                <article>
+                    <h3>
+                        Alive Status
+                    </h3>
+                    <p id="alive">
+                        true/false
+                    </p>
+                </article>
+            </li>
+            <li>
+                <article>
+                    <h3>
+                        Sick Status
+                    </h3>
+                    <p id="sick">
+                        true/false
+                    </p>
+                </article>
+            </li>
+            <li>
+                <article>
+                    <h3>
+                        Electronics Owned
+                    </h3>
+                    <p id="electronics">
+                        numElectronics
+                    </p>
+                </article>
+            </li>
+            <li>
+                <article>
+                    <h3>
+                        Home Owner Status
+                    </h3>
+                    <p id="homeOwnerStatus">
+                        renter/owner
+                    </p>
+                </article>
+            </li>
+            <li>
+                <article>
+                    <h3>
+                        Food Inventory
+                    </h3>
+                    <p id="foodInventory">
+                        foodInventoryID
+                    </p>
+                </article>
+            </li>
+            <li>
+                <article>
+                    <h3>
+                        Stock Inventory
+                    </h3>
+                    <p id="stockInventory">
+                        stockInventoryID
+                    </p>
+                </article>
+            </li>
+        </ul>
+    </section>
+    <section>
+        <h2>Persona Endpoints</h2>
+        <ul class="endpointsList">
+            <li>
+                <button id="spawnPersonabtn">Spawn a persona</button>
+            </li>
+            <li>
+                <button id="checkResidentsBtn">Check residents in Persona's house</button>
+            </li>
+        </ul>
+    </section>
+    <section>
+        <h2>Persona Actions</h2>
+        <ul class="endpointsList">
+            <li>
+                <button id="buyFoodBtn">Buy Food for Persona</button>
+            </li>
+            <li>
+                <button id="buyElectronicBtn">Buy Electronic For Persona</button>
+            </li>
+            <li>
+                <button id="buyStockBtn">Buy Stock For Persona</button>
+            </li>
+            <li>
+                <label for="stock">Stock ID</label>
+                <input type="number" id="sellStockInput" name="stock">
+                <button id="sellStockBtn">Sell Stock For Persona</button>
+            </li>
+        </ul>
+    </section>
+    <button id = "testAddEvent">Add event (testing)</button>
+    <aside class="zeusFeed">
+        <h3>Event Feed</h3>
+        <ul class="zFeedList" id="eventList">
+            <li>
+                <h4>Event Title</h4>
+                <p>Time occured: </p>
+            </li>
+            <li>
+                <h4>Event Title</h4>
+                <p>Time occured: </p>
+            </li>
+            <li>
+                <h4>Event Title</h4>
+                <p>Time occured: </p>
+            </li>
+            <li>
+                <h4>Event Title</h4>
+                <p>Time occured: </p>
+            </li>
+            <li>
+                <h4>Event Title</h4>
+                <p>Time occured: </p>
+            </li>
+            <li>
+                <h4>Event Title</h4>
+                <p>Time occured: </p>
+            </li>
+            <li>
+                <h4>Event Title</h4>
+                <p>Time occured: </p>
+            </li>
+        </ul>
+    </aside>
+</body>
+<script src="index.js"></script>
+</html>
