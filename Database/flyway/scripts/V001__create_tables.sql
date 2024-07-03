@@ -14,9 +14,9 @@ CREATE TABLE
 CREATE TABLE
    "Personas" (
       "id" bigserial PRIMARY KEY,
-      "next_of_kin_id" bigint REFERENCES "Personas" ("id") ON DELETE SET NULL,
-      "partner_id" bigint REFERENCES "Personas" ("id") ON DELETE SET NULL,
-      "parent_id" bigint REFERENCES "Personas" ("id") ON DELETE SET NULL,
+      "next_of_kin_id" bigint,
+      "partner_id" bigint,
+      "parent_id" bigint,
       "birth_format_time" varchar(10),
       "hunger" integer,
       "health" integer,
