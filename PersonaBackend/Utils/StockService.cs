@@ -121,17 +121,32 @@ namespace PersonaBackend.Utils
                 response.EnsureSuccessStatusCode();
 
                 var responseBody = await response.Content.ReadAsStringAsync();
-                apiResponse.Data = JsonSerializer.Deserialize<BusinessMarketValue[]>(responseBody, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
-                apiResponse.Success = true;
-                apiResponse.Message = "Successfully retrieved businesses.";
+
+                var data = JsonSerializer.Deserialize<ApiResponse<BusinessMarketValue[]>>(responseBody, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+
+                if (data != null && data.Data != null)
+                {
+                    apiResponse.Data = data.Data;
+                    apiResponse.Success = true;
+                    apiResponse.Message = "Successfully retrieved businesses.";
+                }
+                else
+                {
+                    apiResponse.Success = false;
+                    apiResponse.Message = "No businesses found or empty response.";
+                }
             }
             catch (HttpRequestException ex)
             {
+                Console.WriteLine("HttpRequestException: " + ex.Message);
+
                 apiResponse.Success = false;
-                apiResponse.Message = "Failed to retrieve businesses.";
+                apiResponse.Message = "Failed to retrieve businesses: " + ex.Message;
             }
             catch (Exception ex)
             {
+                Console.WriteLine("Exception: " + ex.Message);
+
                 apiResponse.Success = false;
                 apiResponse.Message = "An error occurred while processing the request.";
             }
