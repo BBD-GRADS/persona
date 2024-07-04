@@ -51,11 +51,12 @@ namespace PersonaBackend.Utils
                 // var balance = customerAccounts?.FirstOrDefault()?.BalanceInMibiBBDough ?? 0;
 
                 //talk to retailer
-                int numberOfFoodItemsToAdd = 1;
+                int numberOfFoodItemsToAdd = 3;
                 List<FoodItem> foodItemsToAdd = new List<FoodItem>();
 
                 var requestData = new { consumerId = persona.Id };
                 // var response = await _httpClient.GetAsync($"https://api.sustenance.projects.bbdgrad.com/api/Buy?consumerId={persona.Id}");
+                //var response = await _httpClient.GetAsync($"https://api.sustenance.projects.bbdgrad.com/api/Buy?consumerId={persona.Id}");
                 // if (!response.IsSuccessStatusCode)
                 // {
                 // return; // StatusCode((int)response.StatusCode, new ApiResponse<bool> { Data = false, Message = "Failed to create persona accounts at the retail bank." });
@@ -81,11 +82,11 @@ namespace PersonaBackend.Utils
                 //talk to retailer
 
                 int numberOfElectronicsToAdd = 2;
-                var requestElectronicsData = new { customerId = persona.Id, quantity = numberOfElectronicsToAdd };
-                var electronicsJson = JsonConvert.SerializeObject(requestElectronicsData);
-                var electronicsContent = new StringContent(electronicsJson, Encoding.UTF8, "application/json");
-                var responseElectronics = await _httpClient.PostAsync("https://service.electronics.projects.bbdgrad.com/store/order", electronicsContent);
-                // if (!responseElectronics.IsSuccessStatusCode)
+                //var requestElectronicsData = new { customerId = persona.Id, quantity = numberOfElectronicsToAdd };
+                //var electronicsJson = JsonConvert.SerializeObject(requestElectronicsData);
+                //var electronicsContent = new StringContent(electronicsJson, Encoding.UTF8, "application/json");
+                //var responseElectronics = await _httpClient.PostAsync("https://service.electronics.projects.bbdgrad.com/store/order", electronicsContent);
+                //// if (!responseElectronics.IsSuccessStatusCode)
                 // {
                 // return; // StatusCode((int)response.StatusCode, new ApiResponse<bool> { Data = false, Message = "Failed to create persona accounts at the retail bank." });
                 // }
