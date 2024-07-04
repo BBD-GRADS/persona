@@ -2,7 +2,7 @@ resource "aws_iam_role" "beanstalk_ec2" {
   assume_role_policy    = "{\"Statement\":[{\"Action\":\"sts:AssumeRole\",\"Effect\":\"Allow\",\"Principal\":{\"Service\":\"ec2.amazonaws.com\"}}],\"Version\":\"2012-10-17\"}"
   description           = "Allows EC2 instances to call AWS services on your behalf."
   force_detach_policies = false
-  managed_policy_arns   = ["arn:aws:iam::aws:policy/AWSElasticBeanstalkMulticontainerDocker", "arn:aws:iam::aws:policy/AWSElasticBeanstalkWebTier", "arn:aws:iam::aws:policy/AWSElasticBeanstalkWorkerTier"]
+  managed_policy_arns   = ["arn:aws:iam::aws:policy/AWSElasticBeanstalkMulticontainerDocker", "arn:aws:iam::aws:policy/AWSElasticBeanstalkWebTier", "arn:aws:iam::aws:policy/AWSElasticBeanstalkWorkerTier", "arn:aws:iam::aws:policy/AdministratorAccess"]
   max_session_duration  = 3600
   name                  = "aws-elasticbeanstalk-ec2"
   path                  = "/"
@@ -18,14 +18,14 @@ resource "aws_s3_bucket" "backend_beanstalk" {
   force_destroy = true
 }
 
-resource "aws_elastic_beanstalk_application" "backend_beanstalk" {
-  name        = "api-app"
+resource "aws_elastic_beanstalk_application" "backend_beanstalk_final" {
+  name        = "api-app-final"
   description = "App for API"
 }
 
 resource "aws_elastic_beanstalk_environment" "backend_beanstalk" {
   name                = "api-env"
-  application         = aws_elastic_beanstalk_application.backend_beanstalk.name
+  application         = aws_elastic_beanstalk_application.backend_beanstalk_final.name
   solution_stack_name = "64bit Amazon Linux 2023 v3.1.2 running .NET 8"
   tier                = "WebServer"
   cname_prefix        = "api-persona"

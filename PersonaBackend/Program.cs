@@ -58,7 +58,7 @@ namespace PersonaBackend
             });
 
             builder.Services.AddSwaggerExamplesFromAssemblyOf<Program>();
-            builder.Services.AddScoped<StockService>();
+            // builder.Services.AddScoped<StockService>();
 
             #region DB setup
 
@@ -86,7 +86,7 @@ namespace PersonaBackend
             app.UseSwaggerUI();
             //}
 
-            app.UseHttpsRedirection();
+            // app.UseHttpsRedirection();
 
             app.UseCors("OpelCorsa");
 
