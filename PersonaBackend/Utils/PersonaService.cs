@@ -55,7 +55,7 @@ namespace PersonaBackend.Utils
                 List<FoodItem> foodItemsToAdd = new List<FoodItem>();
 
                 var requestData = new { consumerId = persona.Id };
-                var response = await _httpClient.GetAsync($"https://api.sustenance.projects.bbdgrad.com/api/Buy?consumerId={persona.Id}");
+                // var response = await _httpClient.GetAsync($"https://api.sustenance.projects.bbdgrad.com/api/Buy?consumerId={persona.Id}");
                 // if (!response.IsSuccessStatusCode)
                 // {
                 // return; // StatusCode((int)response.StatusCode, new ApiResponse<bool> { Data = false, Message = "Failed to create persona accounts at the retail bank." });
