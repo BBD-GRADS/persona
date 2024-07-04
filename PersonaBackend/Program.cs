@@ -58,6 +58,7 @@ namespace PersonaBackend
             });
 
             builder.Services.AddSwaggerExamplesFromAssemblyOf<Program>();
+            builder.Services.AddScoped<StockService>();
 
             #region DB setup
 
