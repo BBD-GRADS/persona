@@ -147,13 +147,10 @@ namespace PersonaBackend.Utils
             {
                 if ((persona.Sick || persona.DaysStarving >= 2) && persona.Alive)
                 {
-                    died = true;
-                    persona.Alive = false;
-
                     var eventOccurred = new EventOccurred
                     {
                         PersonaId1 = persona.Id,
-                        PersonaId2 = persona.Id,
+                        PersonaId2 = (long)persona.NextOfKinId,
                         EventId = (int)EventTypeEnum.Died,
                         DateOccurred = _chronos.GetCurrentDateString()
                     };
@@ -197,6 +194,56 @@ namespace PersonaBackend.Utils
             {
                 // Handle exceptions or log errors
             }
+        }
+
+        public long GetNextOfKin(Persona persona, List<Persona> personas)
+        {
+            if (persona.NextOfKinId != null)
+            {
+                var currentNextOfKin = personas.FirstOrDefault(p => p.Id == persona.NextOfKinId);
+                if (currentNextOfKin != null && currentNextOfKin.Alive)
+                {
+                    return (long)persona.NextOfKinId;
+                }
+            }
+
+            var children = personas
+                .Where(p => p.ParentId == persona.Id && p.Alive)
+                .Select(p => p.Id)
+                .ToList();
+
+            if (children.Any())
+            {
+                return children.First();
+            }
+            else if (persona.PartnerId != null)
+            {
+                var partner = personas.FirstOrDefault(p => p.Id == persona.PartnerId && p.Alive);
+                if (partner != null)
+                {
+                    return (long)persona.PartnerId;
+                }
+            }
+            else if (persona.ParentId != null)
+            {
+                var parent = personas.FirstOrDefault(p => p.Id == persona.ParentId && p.Alive);
+                if (parent != null)
+                {
+                    return (long)persona.ParentId;
+                }
+            }
+
+            var randomNextOfKin = personas
+                .Where(p => p.Id != persona.Id && p.Alive)
+                .OrderBy(r => Guid.NewGuid())
+                .FirstOrDefault()?.Id;
+
+            if (randomNextOfKin.HasValue)
+            {
+                return randomNextOfKin.Value;
+            }
+
+            return 0;
         }
 
         public void UpdateToAdult(Persona persona)

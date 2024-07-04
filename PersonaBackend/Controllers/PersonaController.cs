@@ -50,6 +50,8 @@ namespace PersonaBackend.Controllers
 
                 foreach (var persona in alivePersonas)
                 {
+                    persona.NextOfKinId = _personaService.GetNextOfKin(persona, alivePersonas);
+
                     var died = _personaService.CheckIfDie(persona);
                     if (died)
                     {
@@ -203,7 +205,6 @@ namespace PersonaBackend.Controllers
         [HttpGet("getAlivePersonasIDs")]
         //[ApiKeyAuthFilter("HandOfZeus")]
         [ProducesResponseType(typeof(ApiResponse<PersonaIdList>), 200)]
-        //[SwaggerResponseExample(200, typeof(ApiResponsePersonaIdListEmptyExample))]
         public async Task<IActionResult> getAlivePersonasIDs()
         {
             try
@@ -262,7 +263,6 @@ namespace PersonaBackend.Controllers
         [HttpGet("getAlivePersonaIds")]
         //[ApiKeyAuthFilter("HandOfZeus")]
         [ProducesResponseType(typeof(ApiResponse<PersonaIdList>), 200)]
-        //[SwaggerResponseExample(200, typeof(ApiResponsePersonaIdListEmptyExample))]
         public async Task<IActionResult> GetAlivePersonaIds()
         {
             try
@@ -416,15 +416,22 @@ namespace PersonaBackend.Controllers
                     .ToListAsync();
 
                 var diedPersonas = events
-                    .Where(e => _chronos.CompareDates(e.DateOccurred, startDate) >= 0 && _chronos.CompareDates(e.DateOccurred, endDate) <= 0)
-                    .Select(e => e.PersonaId1)
-                    .ToList();
+                  .Where(e => _chronos.CompareDates(e.DateOccurred, startDate) >= 0 && _chronos.CompareDates(e.DateOccurred, endDate) <= 0)
+                  .Select(e => new DeathPair
+                  {
+                      deceased = e.PersonaId1,
+                      next_of_kin = e.PersonaId2
+                  })
+                  .ToList();
 
-                var response = new ApiResponse<PersonaIdList>
+                var response = new ApiResponse<DeathPairList>
                 {
                     Success = true,
                     Message = "Died personas retrieved",
-                    Data = new PersonaIdList { PersonaIds = diedPersonas }
+                    Data = new DeathPairList
+                    {
+                        DeathPairs = diedPersonas.ToList()
+                    }
                 };
 
                 return Ok(response);
@@ -496,8 +503,8 @@ namespace PersonaBackend.Controllers
                     .Where(e => _chronos.CompareDates(e.DateOccurred, startDate) >= 0 && _chronos.CompareDates(e.DateOccurred, endDate) <= 0)
                     .Select(e => new PersonaMarriagePair
                     {
-                        FirstPerson = e.PersonaId1,
-                        SecondPerson = e.PersonaId2
+                        partner_a = e.PersonaId1,
+                        partner_b = e.PersonaId2
                     })
                     .ToList();
 
@@ -541,8 +548,8 @@ namespace PersonaBackend.Controllers
                     .Where(e => _chronos.CompareDates(e.DateOccurred, startDate) >= 0 && _chronos.CompareDates(e.DateOccurred, endDate) <= 0)
                     .Select(e => new ParentChildPair
                     {
-                        Parent = e.PersonaId1,
-                        Child = e.PersonaId2
+                        parent = e.PersonaId1,
+                        child = e.PersonaId2
                     })
                     .ToList();
 

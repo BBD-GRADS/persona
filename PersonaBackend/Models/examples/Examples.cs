@@ -47,9 +47,9 @@ namespace PersonaBackend.Models.examples
                 {
                     MarriagePairs = new List<PersonaMarriagePair>
                     {
-                        new PersonaMarriagePair { FirstPerson = 1, SecondPerson = 2 },
-                        new PersonaMarriagePair { FirstPerson = 3, SecondPerson = 7 },
-                        new PersonaMarriagePair { FirstPerson = 4, SecondPerson = 8 }
+                        new PersonaMarriagePair { partner_a = 1, partner_b = 2 },
+                        new PersonaMarriagePair { partner_a = 3, partner_b = 7 },
+                        new PersonaMarriagePair { partner_a = 4, partner_b = 8 }
                     }
                 },
                 Message = "Successfully married the personas",
