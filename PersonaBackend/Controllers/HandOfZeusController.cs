@@ -180,21 +180,14 @@ namespace PersonaBackend.Controllers
         [HttpPost("givePersonasChild")]
         [ProducesResponseType(typeof(ApiResponse<bool>), StatusCodes.Status200OK)]
         [SwaggerResponse(StatusCodes.Status200OK, "Child assigned to parent personas successfully", typeof(ApiResponse<bool>))]
-        public async Task<IActionResult> GivePersonasChild([FromBody] ParentChildList request)
+        public async Task<IActionResult> GivePersonasChild([FromBody] PersonaIdList request)
         {
             using (var transaction = _dbContext.Database.BeginTransaction())
             {
                 try
                 {
-                    var parentIds = request.ParentChildPairs?.Select(pair => pair.parent).ToList();
-
-                    if (parentIds == null || !parentIds.Any())
-                    {
-                        throw new Exception();
-                    }
-
                     var parentsExist = await _dbContext.Personas
-                        .Where(p => parentIds.Contains(p.Id) && p.Alive)
+                        .Where(p => request.PersonaIds.Contains(p.Id) && p.Alive)
                         .Select(p => p.Id)
                         .ToListAsync();
 
@@ -217,6 +210,8 @@ namespace PersonaBackend.Controllers
 
                         _dbContext.Personas.Add(newChild);
 
+                        await _dbContext.SaveChangesAsync();
+
                         var childId = newChild.Id;
 
                         var eventOccurred = new EventOccurred
@@ -230,8 +225,6 @@ namespace PersonaBackend.Controllers
                         eventsToAdd.Add(eventOccurred);
                     }
 
-                    await _dbContext.SaveChangesAsync();
-
                     _dbContext.EventsOccurred.AddRange(eventsToAdd);
                     await _dbContext.SaveChangesAsync();
 
@@ -240,7 +233,7 @@ namespace PersonaBackend.Controllers
                     var response = new ApiResponse<bool>
                     {
                         Success = true,
-                        Message = $" ${parentsExist.Count()} Personas birth has been recorded successfully",
+                        Message = $" {parentsExist.Count()} Personas birth has been recorded successfully",
                         Data = true,
                     };
 
