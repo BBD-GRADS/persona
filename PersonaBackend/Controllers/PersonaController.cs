@@ -69,6 +69,11 @@ namespace PersonaBackend.Controllers
                     _personaService.EatFood(persona);
                     // buy item
                     _personaService.BuyItems(persona);
+
+                    if (persona.Sick)
+                    {
+                        _personaService.sendSickPersonToHealthcare(persona);
+                    }
                 }
                 _dbContext.UpdateRange(alivePersonas);
                 await _dbContext.SaveChangesAsync();
@@ -528,6 +533,7 @@ namespace PersonaBackend.Controllers
         [ProducesResponseType(typeof(ApiResponse<ParentChildList>), 200)]
         public async Task<IActionResult> HadChild(string startDate, string endDate = null)
         {
+            
             try
             {
                 if (string.IsNullOrEmpty(endDate))
@@ -655,6 +661,23 @@ namespace PersonaBackend.Controllers
             {
                 return HandleException(ex);
             }
+        }
+
+
+        [HttpPost("buyHouseSuccess")]
+        public async Task<IActionResult> BuyHouseSuccess([FromBody] long personaId, bool isSuccess)
+        {
+            if (isSuccess)
+            {
+                await _personaService.updateHouseOwningStatusAsync(personaId, 2);
+
+            }
+            else
+            {
+                // do nothing, home status still homeless
+            }
+            return Ok();
+
         }
     }
 }

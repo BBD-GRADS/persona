@@ -147,6 +147,9 @@ namespace PersonaBackend.Controllers
             //_dbContext.HomeOwningStatuses.RemoveRange(_dbContext.HomeOwningStatuses);
             //_dbContext.EventTypes.RemoveRange(_dbContext.EventTypes);
 
+            await _dbContext.Database.ExecuteSqlRawAsync("ALTER SEQUENCE \"Personas_id_seq\" RESTART WITH 1");
+
+
             await _dbContext.SaveChangesAsync();
         }
 
