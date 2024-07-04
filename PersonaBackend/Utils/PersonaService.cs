@@ -58,7 +58,7 @@ namespace PersonaBackend.Utils
                 var response = await _httpClient.GetAsync($"https://api.sustenance.projects.bbdgrad.com/api/Buy?consumerId={persona.Id}");
                 // if (!response.IsSuccessStatusCode)
                 // {
-                   // return; // StatusCode((int)response.StatusCode, new ApiResponse<bool> { Data = false, Message = "Failed to create persona accounts at the retail bank." });
+                // return; // StatusCode((int)response.StatusCode, new ApiResponse<bool> { Data = false, Message = "Failed to create persona accounts at the retail bank." });
                 // }
 
                 for (int i = 0; i < numberOfFoodItemsToAdd; i++)
@@ -87,7 +87,7 @@ namespace PersonaBackend.Utils
                 // var responseElectronics = await _httpClient.PostAsync("https://service.electronics.projects.bbdgrad.com/store/order", electronicsContent);
                 // if (!responseElectronics.IsSuccessStatusCode)
                 // {
-                   // return; // StatusCode((int)response.StatusCode, new ApiResponse<bool> { Data = false, Message = "Failed to create persona accounts at the retail bank." });
+                // return; // StatusCode((int)response.StatusCode, new ApiResponse<bool> { Data = false, Message = "Failed to create persona accounts at the retail bank." });
                 // }
 
                 persona.NumElectronicsOwned += numberOfElectronicsToAdd;
@@ -147,13 +147,10 @@ namespace PersonaBackend.Utils
             {
                 if ((persona.Sick || persona.DaysStarving >= 2) && persona.Alive)
                 {
-                    died = true;
-                    persona.Alive = false;
-
                     var eventOccurred = new EventOccurred
                     {
                         PersonaId1 = persona.Id,
-                        PersonaId2 = persona.Id,
+                        PersonaId2 = (long)persona.NextOfKinId,
                         EventId = (int)EventTypeEnum.Died,
                         DateOccurred = _chronos.GetCurrentDateString()
                     };
@@ -197,6 +194,56 @@ namespace PersonaBackend.Utils
             {
                 // Handle exceptions or log errors
             }
+        }
+
+        public long GetNextOfKin(Persona persona, List<Persona> personas)
+        {
+            if (persona.NextOfKinId != null)
+            {
+                var currentNextOfKin = personas.FirstOrDefault(p => p.Id == persona.NextOfKinId);
+                if (currentNextOfKin != null && currentNextOfKin.Alive)
+                {
+                    return (long)persona.NextOfKinId;
+                }
+            }
+
+            var children = personas
+                .Where(p => p.ParentId == persona.Id && p.Alive)
+                .Select(p => p.Id)
+                .ToList();
+
+            if (children.Any())
+            {
+                return children.First();
+            }
+            else if (persona.PartnerId != null)
+            {
+                var partner = personas.FirstOrDefault(p => p.Id == persona.PartnerId && p.Alive);
+                if (partner != null)
+                {
+                    return (long)persona.PartnerId;
+                }
+            }
+            else if (persona.ParentId != null)
+            {
+                var parent = personas.FirstOrDefault(p => p.Id == persona.ParentId && p.Alive);
+                if (parent != null)
+                {
+                    return (long)persona.ParentId;
+                }
+            }
+
+            var randomNextOfKin = personas
+                .Where(p => p.Id != persona.Id && p.Alive)
+                .OrderBy(r => Guid.NewGuid())
+                .FirstOrDefault()?.Id;
+
+            if (randomNextOfKin.HasValue)
+            {
+                return randomNextOfKin.Value;
+            }
+
+            return 0;
         }
 
         public void UpdateToAdult(Persona persona)

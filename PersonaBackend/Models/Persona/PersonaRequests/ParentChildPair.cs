@@ -2,7 +2,7 @@
 {
     public class ParentChildPair
     {
-        public long Parent { get; set; }
-        public long Child { get; set; }
+        public long parent { get; set; }
+        public long child { get; set; }
     }
 }

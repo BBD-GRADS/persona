@@ -2,7 +2,7 @@
 {
     public class PersonaMarriagePair
     {
-        public long FirstPerson { get; set; }
-        public long SecondPerson { get; set; }
+        public long partner_a { get; set; }
+        public long partner_b { get; set; }
     }
 }

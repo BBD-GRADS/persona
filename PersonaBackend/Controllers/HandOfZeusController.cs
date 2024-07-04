@@ -25,6 +25,7 @@ namespace PersonaBackend.Controllers
         private readonly Chronos _chronos;
         private readonly AWSManagerService _awsManagerService;
         private readonly HttpClient _httpClient;
+        private readonly PersonaService _personaService;
 
         public HandOfZeusController(Context dbContext, Chronos chronos, AWSManagerService awsManagerService, HttpClient httpClient)
         {
@@ -32,6 +33,7 @@ namespace PersonaBackend.Controllers
             _chronos = chronos;
             _awsManagerService = awsManagerService;
             _httpClient = httpClient;
+            _personaService = new PersonaService(dbContext, chronos, httpClient);
         }
 
         private IActionResult HandleException(Exception ex)
@@ -184,7 +186,7 @@ namespace PersonaBackend.Controllers
             {
                 try
                 {
-                    var parentIds = request.ParentChildPairs?.Select(pair => pair.Parent).ToList();
+                    var parentIds = request.ParentChildPairs?.Select(pair => pair.parent).ToList();
 
                     if (parentIds == null || !parentIds.Any())
                     {
@@ -271,10 +273,14 @@ namespace PersonaBackend.Controllers
                         _dbContext.Personas.Update(persona);
                     }
 
+                    var alivePersonas = await _dbContext.Personas
+                    .Where(p => p.Alive)
+                    .ToListAsync();
+
                     var eventsToAdd = personas.Select(persona => new EventOccurred
                     {
                         PersonaId1 = persona.Id,
-                        PersonaId2 = persona.Id,
+                        PersonaId2 = _personaService.GetNextOfKin(persona, alivePersonas),
                         EventId = (int)EventTypeEnum.Died,
                         DateOccurred = _chronos.GetCurrentDateString(),
                     }).ToList();
@@ -316,7 +322,7 @@ namespace PersonaBackend.Controllers
                     }
 
                     var personaIds = request.MarriagePairs
-                                         .SelectMany(pair => new[] { pair.FirstPerson, pair.SecondPerson })
+                                         .SelectMany(pair => new[] { pair.partner_a, pair.partner_b })
                                          .Distinct()
                                          .ToList();
 
@@ -326,8 +332,8 @@ namespace PersonaBackend.Controllers
 
                     foreach (var pair in request.MarriagePairs)
                     {
-                        var firstPerson = personas.FirstOrDefault(p => p.Id == pair.FirstPerson);
-                        var secondPerson = personas.FirstOrDefault(p => p.Id == pair.SecondPerson);
+                        var firstPerson = personas.FirstOrDefault(p => p.Id == pair.partner_a);
+                        var secondPerson = personas.FirstOrDefault(p => p.Id == pair.partner_b);
 
                         if (firstPerson != null && secondPerson != null)
                         {
@@ -345,8 +351,8 @@ namespace PersonaBackend.Controllers
 
                     var eventsToAdd = request.MarriagePairs.Select(pair => new EventOccurred
                     {
-                        PersonaId1 = pair.FirstPerson,
-                        PersonaId2 = pair.SecondPerson,
+                        PersonaId1 = pair.partner_a,
+                        PersonaId2 = pair.partner_b,
                         EventId = (int)EventTypeEnum.Married,
                         DateOccurred = _chronos.GetCurrentDateString()
                     }).ToList();
