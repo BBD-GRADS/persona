@@ -25,6 +25,10 @@ namespace PersonaBackend.Utils
 
         private AWSManagerService(string accessKeyId, string secretAccessKey, string region)
         {
+            Console.WriteLine("looking now in prv contsteuctor");
+            Console.WriteLine(accessKeyId);
+            Console.WriteLine(secretAccessKey);
+            Console.WriteLine(region);
             _accessKeyId = accessKeyId ?? throw new ArgumentNullException(nameof(accessKeyId));
             _secretAccessKey = secretAccessKey ?? throw new ArgumentNullException(nameof(secretAccessKey));
             _region = region ?? throw new ArgumentNullException(nameof(region));
