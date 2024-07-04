@@ -18,17 +18,17 @@ resource "aws_s3_bucket" "backend_beanstalk" {
   force_destroy = true
 }
 
-resource "aws_elastic_beanstalk_application" "backend_beanstalk" {
-  name        = "api-app"
+resource "aws_elastic_beanstalk_application" "backend_beanstalk_final" {
+  name        = "api-app-final"
   description = "App for API"
 }
 
 resource "aws_elastic_beanstalk_environment" "backend_beanstalk" {
   name                = "api-env"
-  application         = aws_elastic_beanstalk_application.backend_beanstalk.name
+  application         = aws_elastic_beanstalk_application.backend_beanstalk_final.name
   solution_stack_name = "64bit Amazon Linux 2023 v3.1.2 running .NET 8"
   tier                = "WebServer"
-  cname_prefix        = "api-persona"
+  cname_prefix        = "api-persona-1"
 
   lifecycle {
     ignore_changes = all
