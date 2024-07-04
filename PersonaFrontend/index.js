@@ -3,19 +3,21 @@ import {ApiHelper } from "./apiHelper.js";
 let currentPersona = -1;
 const baseURL = "https://api.persona.projects.bbdgrad.com/api";
 const stockURL = "https://api.mese.projects.bbdgrad.com";
+const foodURL = "https://api.sustenance.projects.bbdgrad.com/api";
+const electronicURL = "https://service.electronics.projects.bbdgrad.com";
 
 let addChildButton = document.getElementById("spawnChildbtn");
 let buyFoodButton = document.getElementById("buyFoodBtn");
 let buyElectronicButton = document.getElementById("buyElectronicBtn");
 let buyStockButton = document.getElementById("buyStockBtn");
-let sellStockButton = document.getElementById("sellStockBtn");
+//let sellStockButton = document.getElementById("sellStockBtn");
 let checkStockButton = document.getElementById("checkStockBtn");
 let refreshDataButton = document.getElementById("refreshData");
 
 
 let personaSearchButton = document.getElementById("pSearchButton");
 let searchInput = document.getElementById("pSearch");
-let sellStockInput = document.getElementById("sellStockInput");
+//let sellStockInput = document.getElementById("sellStockInput");
 
 let personaIDTitle = document.getElementById("personaIDTitle");
 
@@ -39,7 +41,7 @@ addChildButton.addEventListener("click",spawnChild);
 buyFoodButton.addEventListener("click",buyFood);
 buyElectronicButton.addEventListener("click",buyElectronic);
 buyStockButton.addEventListener("click",buyStock);
-sellStockButton.addEventListener("click",sellStock);
+//sellStockButton.addEventListener("click",sellStock);
 personaSearchButton.addEventListener("click",searchForPersona);
 checkStockButton.addEventListener("click",checkStock);
 refreshDataButton.addEventListener("click",populateDataBlocks);
@@ -59,6 +61,7 @@ populateDataBlocks();
 async function populateDataBlocks()
 {
     let personaAliveData = ((await getAlivePersonas()).data);
+    console.log(personaAliveData);
     aliveValue.innerText = personaAliveData.personas.length;
 
     let personaDeceasedData = ((await getDeadPersonas()).data)
@@ -101,39 +104,36 @@ async function spawnChild()
     
 }
 
-
-function checkResidents()
-{
-    populateResponseBlock("There are 4 residents in " + currentPersona + "'s house");
-}
-
 function buyFood()
 {
+    buyFoods();
     populateResponseBlock("Bought food for persona " + currentPersona );
 }
 
 function buyElectronic()
 {
+    buyElectronics();
     populateResponseBlock("Bought electronic for persona " + currentPersona);
 }
 
 function buyStock()
 {
+    //buyStocks()
     populateResponseBlock("Bought stock for persona " + currentPersona);
 }
 
-function sellStock()
-{
-    if(isEmpty(sellStockInput.value))
-    {
-        alert("Please input a stock value");
-    }
-    else
-    {
-        populateResponseBlock("Sold stock with id: " + sellStockInput.value);
-    }
+// function sellStock()
+// {
+//     if(isEmpty(sellStockInput.value))
+//     {
+//         alert("Please input a stock value");
+//     }
+//     else
+//     {
+//         populateResponseBlock("Sold stock with id: " + sellStockInput.value);
+//     }
     
-}
+// }
 
 function checkStock()
 {
@@ -151,24 +151,20 @@ function updatePersonaDetails(personaID, personaJSON)
     personaIDTitle.innerText = "Currently viewing Persona ID: " + currentPersona;
     console.log(personaJSON);
 
-    nextOfKin.innerText = personaJSON.next_of_kin_id;
-    partner.innerText = personaJSON.partner_id;
-    parent.innerText = personaJSON.parent_id;
-    birthTime.innerText = personaJSON.birth_date;
+    nextOfKin.innerText = personaJSON.nextOfKinId;
+    partner.innerText = personaJSON.partnerId;
+    parent.innerText = personaJSON.parentId;
+    birthTime.innerText = personaJSON.birthFormatTime;
     hunger.innerText = personaJSON.hunger;
     health.innerText = personaJSON.health;
     alive.innerText = personaJSON.alive;
     sick.innerText = personaJSON.sick;
-    electronics.innerText = personaJSON.num_electronics_owned;
-    homeOwner.innerText = personaJSON.home_owning_status;
-    foodInventory.innerText = personaJSON.num_food_items;
-    stockInventory.innerText = personaJSON.num_stocks_owned;
+    electronics.innerText = personaJSON.numElectronicsOwned;
+    homeOwner.innerText = personaJSON.homeOwningStatusId;
+    foodInventory.innerText = personaJSON.foodInventory.length;
+    stockInventory.innerText = personaJSON.stockInventory.length;
     adult.innerText = personaJSON.adult;
-
-
 }
-
-
 
 function isEmpty(input) {
     return !input.trim().length;
@@ -270,9 +266,8 @@ async function getMarriedPersonas() {
 async function makeChild(id) {
     const apiHelper = new ApiHelper(baseURL);
     try {
-      const response = await apiHelper.post('Persona/makeNewChild?parent_id=' + id);
+      const response = await apiHelper.post('Persona/makeNewChild?parentId=' + id);
       console.log(response);
-      // console.log('TimeTrackItem successfully added:', response);
     } catch (error) {
       console.error('Error performing CRUD operation:', error);
     }
@@ -284,17 +279,32 @@ async function makeChild(id) {
     try {
       const response = await apiHelper.post('/stocks/buy' + id);
       console.log(response);
-      // console.log('TimeTrackItem successfully added:', response);
     } catch (error) {
       console.error('Error performing CRUD operation:', error);
     }
   }
 
-  async function postNewNoteToDB(noteObject) {
-    const apiHelper = new ApiHelper(baseUrl);
+  async function buyFoods() {
+    const apiHelper = new ApiHelper(foodURL);
+    let id = currentPersona;
     try {
-      const response = await apiHelper.post('/create/notes', noteObject);
-      // console.log('Note successfully added:', response);
+      const response = await apiHelper.post('Buy?consumerId=' + id);
+      console.log(response);
+    } catch (error) {
+      console.error('Error performing CRUD operation:', error);
+    }
+  }
+
+  async function buyElectronics() {
+    const apiHelper = new ApiHelper(electronicURL);
+    let body = {
+        "personaId" : currentPersona.toString(),
+        "quanity"   : 1
+    }
+    console.log(body);
+    try {
+      const response = await apiHelper.post('store/order',body);
+      console.log(response);
     } catch (error) {
       console.error('Error performing CRUD operation:', error);
     }
