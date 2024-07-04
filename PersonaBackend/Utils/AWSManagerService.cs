@@ -40,10 +40,14 @@ namespace PersonaBackend.Utils
             {
                 if (_instance == null)
                 {
-                    DotNetEnv.Env.Load(".env");
-                    var accessKeyId = DotNetEnv.Env.GetString("AWS_ACCESS_KEY_ID");
-                    var secretAccessKey = DotNetEnv.Env.GetString("AWS_SECRET_ACCESS_KEY");
-                    var region = DotNetEnv.Env.GetString("AWS_REGION");
+                    // DotNetEnv.Env.Load(".env");
+                    Console.WriteLine("Retrieving env variables");
+                    var accessKeyId = Environment.GetEnvironmentVariable("AWS_ACCESS_KEY_ID");
+                    var secretAccessKey = Environment.GetEnvironmentVariable("AWS_SECRET_ACCESS_KEY");
+                    var region = Environment.GetEnvironmentVariable("AWS_REGION");
+                    Console.WriteLine(accessKeyId);
+                    Console.WriteLine(secretAccessKey);
+                    Console.WriteLine(region);
 
                     _instance = new AWSManagerService(accessKeyId, secretAccessKey, region);
                 }
