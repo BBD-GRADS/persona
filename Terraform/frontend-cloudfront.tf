@@ -28,7 +28,7 @@ resource "aws_cloudfront_distribution" "frontend" {
   is_ipv6_enabled     = false
   default_root_object = "index.html"
 
-  aliases = [ var.domain_name ]
+  # aliases = [ var.domain_name ]
 
   default_cache_behavior {
     # Using the CachingDisabled managed policy ID:

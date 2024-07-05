@@ -16,9 +16,20 @@
 
 
 
+#
+#resource "aws_cognito_user_pool" "prd_pool" {
+#  name                     = var.db_name
+#  schema {
+#    name                = "email"
+#    attribute_data_type = "String"
+#    mutable             = true
+#    required            = true
+#  }
+#  auto_verified_attributes = ["email"]
+#}
 
-resource "aws_cognito_user_pool" "prd_pool" {
-  name                     = var.db_name
+resource "aws_cognito_user_pool" "prd_pool_1" {
+  name                     = var.domain_name
   schema {
     name                = "email"
     attribute_data_type = "String"
@@ -30,7 +41,7 @@ resource "aws_cognito_user_pool" "prd_pool" {
 
 resource "aws_cognito_user_pool_client" "prd_pool" {
   name                         = "prd_client"
-  user_pool_id                 = aws_cognito_user_pool.prd_pool.id
+  user_pool_id                 = aws_cognito_user_pool.prd_pool_1.id
   access_token_validity        = 1
   supported_identity_providers = ["Google"]
   allowed_oauth_flows_user_pool_client = true
@@ -44,12 +55,12 @@ resource "aws_cognito_user_pool_client" "prd_pool" {
 
 resource "aws_cognito_user_pool_domain" "prd_pool" {
   domain       = "persona-manager"
-  user_pool_id = aws_cognito_user_pool.prd_pool.id
+  user_pool_id = aws_cognito_user_pool.prd_pool_1.id
 }
 
 
 resource "aws_cognito_identity_provider" "google" {
-  user_pool_id  = aws_cognito_user_pool.prd_pool.id
+  user_pool_id  = aws_cognito_user_pool.prd_pool_1.id
   provider_name = "Google"
   provider_type = "Google"
 
