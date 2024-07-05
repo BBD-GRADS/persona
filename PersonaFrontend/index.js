@@ -10,8 +10,6 @@ let addChildButton = document.getElementById("spawnChildbtn");
 let buyFoodButton = document.getElementById("buyFoodBtn");
 let buyElectronicButton = document.getElementById("buyElectronicBtn");
 let buyStockButton = document.getElementById("buyStockBtn");
-//let sellStockButton = document.getElementById("sellStockBtn");
-let checkStockButton = document.getElementById("checkStockBtn");
 let refreshDataButton = document.getElementById("refreshData");
 
 
@@ -43,7 +41,6 @@ buyElectronicButton.addEventListener("click",buyElectronic);
 buyStockButton.addEventListener("click",buyStock);
 //sellStockButton.addEventListener("click",sellStock);
 personaSearchButton.addEventListener("click",searchForPersona);
-checkStockButton.addEventListener("click",checkStock);
 refreshDataButton.addEventListener("click",populateDataBlocks);
 
 let aliveValue = document.getElementById("aliveValue");
@@ -53,9 +50,20 @@ let marriagesValue = document.getElementById("marriagesValue");
 
 
 
-personaIDTitle.innerText = "Currently viewing Persona ID: " + currentPersona;
+populatePersonaID(currentPersona);
 populateDataBlocks();
 
+function populatePersonaID(id)
+{
+    if(id == -1)
+    {
+        personaIDTitle.innerText = "No persona ID";
+    }
+    else
+    {  
+        personaIDTitle.innerText = "Currently viewing Persona ID: " + currentPersona;
+    }
+}
 
 
 async function populateDataBlocks()
@@ -68,7 +76,12 @@ async function populateDataBlocks()
     deceasedValue.innerText = personaDeceasedData.personas.length;
 
     let personaBirthsData = ((await getBirthedPersonas()).data)
-    birthsValue.innerText = (personaBirthsData - 1000);
+    if((personaBirthsData - 1000) < 0)
+        {
+            birthsValue.innerText = "0";
+        }else{
+            birthsValue.innerText = (personaBirthsData - 1000);
+        }
 
     let personaMarriagesData = ((await getMarriedPersonas()).data)
     marriagesValue.innerText = personaMarriagesData;
@@ -99,7 +112,7 @@ async function spawnChild()
     if(currentPersona != -1 )
     {
         await makeChild(currentPersona);
-        populateResponseBlock("Spawned a child for persona " + currentPersona);
+        //populateResponseBlock("Spawned a child for persona " + currentPersona);
     }
     
 }
@@ -107,19 +120,16 @@ async function spawnChild()
 function buyFood()
 {
     buyFoods();
-    populateResponseBlock("Bought food for persona " + currentPersona );
 }
 
 function buyElectronic()
 {
     buyElectronics();
-    populateResponseBlock("Bought electronic for persona " + currentPersona);
 }
 
 function buyStock()
 {
-    //buyStocks()
-    populateResponseBlock("Bought stock for persona " + currentPersona);
+    buyStocks();
 }
 
 // function sellStock()
@@ -142,7 +152,13 @@ function checkStock()
 
 function populateResponseBlock(content)
 {
-    document.getElementById("responseText").innerText = content;
+    if(content)
+    {
+        document.getElementById("responseText").innerText = content;
+    }
+    else{
+        document.getElementById("responseText").innerText = "Could not show response";
+    }
 }
 
 function updatePersonaDetails(personaID, personaJSON)
@@ -160,7 +176,7 @@ function updatePersonaDetails(personaID, personaJSON)
     alive.innerText = personaJSON.alive;
     sick.innerText = personaJSON.sick;
     electronics.innerText = personaJSON.numElectronicsOwned;
-    homeOwner.innerText = personaJSON.homeOwningStatusId;
+    homeOwner.innerText = showHomeOwnerState(personaJSON.homeOwningStatusId);
     foodInventory.innerText = personaJSON.foodInventory.length;
     stockInventory.innerText = personaJSON.stockInventory.length;
     adult.innerText = personaJSON.adult;
@@ -168,6 +184,19 @@ function updatePersonaDetails(personaID, personaJSON)
 
 function isEmpty(input) {
     return !input.trim().length;
+}
+
+function showHomeOwnerState(id)
+{
+    switch(id)
+    {
+        case 2:
+            return "home owner";
+        case 3:
+            return "renter";
+        default:
+            return "homeless";
+    }
 }
 
 //personaTestObj = JSON.parse('{"id": 2,"parent_id": 1,"partner_id": 3,"next_of_kin_id": 5,"birth_date": "01|10|19","hunger": 88,"health": 100,"alive": true,"sick": false,"num_electronics_owned": 3,"home_owning_status": "owner","num_food_items": 5,"num_stocks_owned": 3,"adult": true}')
@@ -265,9 +294,14 @@ async function getMarriedPersonas() {
 
 async function makeChild(id) {
     const apiHelper = new ApiHelper(baseURL);
+    let body =
+    {
+        "parentId": id
+    }
     try {
-      const response = await apiHelper.post('Persona/makeNewChild?parentId=' + id);
+      const response = await apiHelper.post('Persona/makeNewChild',body);
       console.log(response);
+      populateResponseBlock(response.message);
     } catch (error) {
       console.error('Error performing CRUD operation:', error);
     }
@@ -276,9 +310,11 @@ async function makeChild(id) {
 
   async function buyStocks() {
     const apiHelper = new ApiHelper(stockURL);
+    let id = currentPersona;
     try {
-      const response = await apiHelper.post('/stocks/buy' + id);
+      const response = await apiHelper.post('stocks/buy/' + id);
       console.log(response);
+      populateResponseBlock(response.message);
     } catch (error) {
       console.error('Error performing CRUD operation:', error);
     }
@@ -288,7 +324,8 @@ async function makeChild(id) {
     const apiHelper = new ApiHelper(foodURL);
     let id = currentPersona;
     try {
-      const response = await apiHelper.post('Buy?consumerId=' + id);
+      const response = await apiHelper.get('/Buy?consumerId=' + id);
+      populateResponseBlock(response.message);
       console.log(response);
     } catch (error) {
       console.error('Error performing CRUD operation:', error);
@@ -305,6 +342,7 @@ async function makeChild(id) {
     try {
       const response = await apiHelper.post('store/order',body);
       console.log(response);
+      populateResponseBlock(response.message);
     } catch (error) {
       console.error('Error performing CRUD operation:', error);
     }

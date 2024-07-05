@@ -32,7 +32,6 @@ export class ApiHelper {
         const options = {
             method: 'GET',
             headers: {
-                //'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
             }
         }
 
