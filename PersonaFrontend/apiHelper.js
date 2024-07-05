@@ -9,7 +9,6 @@ export class ApiHelper {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
             },
             body: JSON.stringify(data)
         };
@@ -33,7 +32,6 @@ export class ApiHelper {
         const options = {
             method: 'GET',
             headers: {
-                //'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
             }
         }
 
