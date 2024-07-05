@@ -71,6 +71,10 @@ h1{
     gap: 1rem;
 }
 
+.hidden{
+    display:none;
+}
+
 .personaStatsSection{
     width: 30%;
 }
