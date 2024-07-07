@@ -163,6 +163,8 @@ function populateResponseBlock(content)
 
 function updatePersonaDetails(personaID, personaJSON)
 {
+    try
+    {
     currentPersona = personaID;
     personaIDTitle.innerText = "Currently viewing Persona ID: " + currentPersona;
     console.log(personaJSON);
@@ -180,6 +182,9 @@ function updatePersonaDetails(personaID, personaJSON)
     foodInventory.innerText = personaJSON.foodInventory.length;
     stockInventory.innerText = personaJSON.stockInventory.length;
     adult.innerText = personaJSON.adult;
+    }catch{
+        console.log("Could not display Persona data");
+    }
 }
 
 function isEmpty(input) {
