@@ -36,7 +36,7 @@ namespace PersonaBackend.Controllers
         [ProducesResponseType(400)]
         [ProducesResponseType(404)]
         [ProducesResponseType(500)]
-        public async Task<IActionResult> BuyStock([FromBody] BuyStockRequest request)
+        public async Task<IActionResult> BuyStock([FromBody] BuyStockRequestNew request)
         {
             try
             {
@@ -111,7 +111,7 @@ namespace PersonaBackend.Controllers
         [ProducesResponseType(400)]
         [ProducesResponseType(404)]
         [ProducesResponseType(500)]
-        public async Task<IActionResult> SellStock([FromBody] Models.Stocks.StockRequests.SellStockRequest request)
+        public async Task<IActionResult> SellStock([FromBody] Models.Stocks.StockRequests.SellStockRequestNew request)
         {
             try
             {
@@ -162,7 +162,7 @@ namespace PersonaBackend.Controllers
             }
         }
         
-        [HttpPost("SellStock")]
+        [HttpPost("SellStockAsync")]
         [ProducesResponseType(typeof(ApiResponse<StockListing>), 200)]
         [SwaggerResponse(200, "Stock successfully listed for sale.", typeof(ApiResponse<StockListing>))]
         [SwaggerResponse(500, "An error occurred while processing the request.", typeof(ApiResponse<bool>))]
