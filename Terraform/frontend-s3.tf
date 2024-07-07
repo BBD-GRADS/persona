@@ -36,7 +36,7 @@ resource "aws_s3_bucket_policy" "frontend" {
           "Service" : "cloudfront.amazonaws.com"
         },
         "Action" : "s3:GetObject",
-        "Resource" : "${aws_s3_bucket.frontend.arn}/*",
+        "Resource" : ["${aws_s3_bucket.frontend.arn}/*", "${aws_s3_bucket.frontend.arn}"],
         "Condition" : {
           "StringEquals" : {
             "AWS:SourceArn" : "${aws_cloudfront_distribution.frontend.arn}"
