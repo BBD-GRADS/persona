@@ -49,6 +49,18 @@ let birthsValue = document.getElementById("birthsValue");
 let marriagesValue = document.getElementById("marriagesValue");
 
 
+console.log("boing");
+if (localStorage.getItem("accessToken") != null) {
+    console.log("access token exists")
+    }else
+    {
+        console.log("no access token!!!");
+        window.location.href = 'https://persona.projects.bbdgrad.com/login.html';
+    }
+console.log("boing2");
+    
+
+
 
 populatePersonaID(currentPersona);
 populateDataBlocks();
@@ -352,3 +364,5 @@ async function makeChild(id) {
       console.error('Error performing CRUD operation:', error);
     }
   }
+
+ 

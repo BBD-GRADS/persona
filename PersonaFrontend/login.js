@@ -26,10 +26,11 @@ async function generateCodeVerifierAndChallenge() {
 }
 
 document.getElementById('loginBtn').addEventListener('click', async () => {
-  const {codeChallenge } = await generateCodeVerifierAndChallenge();
-  const state = generateRandomString(16);
+  //const {codeChallenge } = await generateCodeVerifierAndChallenge();
+  //const state = generateRandomString(16);
     // Redirect to cognito authentication
-    const authUrl = `https://${cognitoDomain}/oauth2/authorize?response_type=code&client_id=${clientId}&redirect_uri=${redirectUri}&scope=openid+email+profile+aws.cognito.signin.user.admin&code_challenge_method=S256&code_challenge=${codeChallenge}&state=${state}`;
+    //const authUrl = `https://${cognitoDomain}/oauth2/authorize?response_type=code&client_id=${clientId}&redirect_uri=${redirectUri}&scope=openid+email+profile+aws.cognito.signin.user.admin&code_challenge_method=S256&code_challenge=${codeChallenge}&state=${state}`;
+    const authUrl = `https://${cognitoDomain}/login?client_id=${clientId}&response_type=code&scope=email+openid+phone&redirect_uri=${redirectUri}`;
     document.getElementById('loginBtn').classList.add('hide');
     window.location.href = authUrl;
   }
