@@ -51,7 +51,7 @@ namespace PersonaBackend.Controllers
                     .Include(p => p.FoodInventory)
                     .ToListAsync();
 
-                Debug.WriteLine(" for eaching");
+                // Debug.WriteLine(" for eaching");
                 foreach (var persona in alivePersonas)
                 {
                     persona.NextOfKinId = _personaService.GetNextOfKin(persona, alivePersonas);
@@ -71,12 +71,12 @@ namespace PersonaBackend.Controllers
 
                     persona.Hunger = 100;
                     
-                    Debug.WriteLine("Done next of kin, check if dead and adult update");
+                    // Debug.WriteLine("Done next of kin, check if dead and adult update");
                     _personaService.UpdatePersonaFoodStorage(persona);
                     _personaService.EatFood(persona);
                     // buy item
                     _personaService.BuyItems(persona);
-                    Debug.WriteLine("Finished food storage update, eating food and buying items");
+                    // Debug.WriteLine("Finished food storage update, eating food and buying items");
 
                     if (persona.Sick)
                     {
@@ -84,7 +84,7 @@ namespace PersonaBackend.Controllers
                     }
                 }
                 
-                Debug.WriteLine("End of foreach");
+                Debug.WriteLine("End of foreach:", alivePersonas.Count);
                 _dbContext.UpdateRange(alivePersonas);
                 await _dbContext.SaveChangesAsync();
 
