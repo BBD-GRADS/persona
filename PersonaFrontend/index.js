@@ -1,4 +1,5 @@
 import {ApiHelper } from "./apiHelper.js";
+import {clientId, cognitoDomain } from './config.js';
 
 let currentPersona = -1;
 const baseURL = "https://api.persona.projects.bbdgrad.com/api";
@@ -11,6 +12,7 @@ let buyFoodButton = document.getElementById("buyFoodBtn");
 let buyElectronicButton = document.getElementById("buyElectronicBtn");
 let buyStockButton = document.getElementById("buyStockBtn");
 let refreshDataButton = document.getElementById("refreshData");
+let logoutbutton = document.getElementById("logoutbtn");
 
 
 let personaSearchButton = document.getElementById("pSearchButton");
@@ -42,6 +44,7 @@ buyStockButton.addEventListener("click",buyStock);
 //sellStockButton.addEventListener("click",sellStock);
 personaSearchButton.addEventListener("click",searchForPersona);
 refreshDataButton.addEventListener("click",populateDataBlocks);
+logoutbutton.addEventListener("click",logout);
 
 let aliveValue = document.getElementById("aliveValue");
 let deceasedValue = document.getElementById("deceasedValue");
@@ -49,21 +52,25 @@ let birthsValue = document.getElementById("birthsValue");
 let marriagesValue = document.getElementById("marriagesValue");
 
 
-console.log("boing");
 if (localStorage.getItem("accessToken") != null) {
-    console.log("access token exists")
+    //we all good
     }else
     {
         console.log("no access token!!!");
         window.location.href = 'https://persona.projects.bbdgrad.com/login.html';
     }
-console.log("boing2");
-    
+
 
 
 
 populatePersonaID(currentPersona);
 populateDataBlocks();
+
+function logout()
+{
+    localStorage.removeItem("accessToken");
+    window.location.href = 'https://persona.projects.bbdgrad.com/login.html';
+}
 
 function populatePersonaID(id)
 {
@@ -364,5 +371,47 @@ async function makeChild(id) {
       console.error('Error performing CRUD operation:', error);
     }
   }
+
+  async function verifyAccessToken(accessToken) {
+    const url = `https://${cognitoDomain}/oauth2/tokeninfo`;
+    console.log(url);
+  
+    accessToken = localStorage.getItem("accessToken");
+
+    const body = new URLSearchParams({
+        access_token: accessToken,
+      });
+    try {
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: body,
+      });
+  
+      if (!response.ok) {
+        throw new Error('Failed to verify access token');
+      }
+  
+      const data = await response.json();
+      console.log('Token verification response:', data);
+  
+      // Check the response to determine if the token is valid
+      if (data.hasOwnProperty('error')) {
+        console.error('Access token verification failed:', data.error);
+        //window.location.href = 'https://persona.projects.bbdgrad.com/login.html';
+        return false;
+      } else {
+        console.log('Access token is valid');
+        // Optionally, extract and use information from 'data' if needed
+        console.log(data.email);
+        return true;
+      }
+    } catch (error) {
+      console.error('Error verifying access token:', error);
+      //window.location.href = 'https://persona.projects.bbdgrad.com/login.html';
+      return false;
+    }
+  }
+  
 
  
