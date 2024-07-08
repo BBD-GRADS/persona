@@ -159,6 +159,8 @@ namespace PersonaBackend.Utils
                         DateOccurred = _chronos.GetCurrentDateString()
                     };
 
+                    died = true;
+
                     _dbContext.EventsOccurred.Add(eventOccurred);
                     _dbContext.Personas.Update(persona);
                     //_dbContext.SaveChanges();
@@ -167,6 +169,7 @@ namespace PersonaBackend.Utils
             }
             catch (Exception ex)
             {
+                Debug.WriteLine(ex);
                 return died;
             }
         }

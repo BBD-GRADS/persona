@@ -59,6 +59,7 @@ namespace PersonaBackend.Controllers
                     var died = _personaService.CheckIfDie(persona);
                     if (died)
                     {
+                        persona.Alive = false;
                         continue;
                     }
 
