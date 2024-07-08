@@ -73,7 +73,11 @@ namespace PersonaBackend
             {
                 options.UseNpgsql(connectionString ??
                     throw new InvalidOperationException("Connection String not found or invalid"));
+                
             });
+            var optionsBuilder = new DbContextOptionsBuilder<Context>();
+            optionsBuilder.UseNpgsql(connectionString, options => options.CommandTimeout(180));
+            
 
             #endregion DB setup
 

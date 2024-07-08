@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using PersonaBackend.Data;
 using PersonaBackend.Utils;
+using System.Diagnostics;
 
 namespace PersonaBackend.Controllers
 {
@@ -16,6 +17,7 @@ namespace PersonaBackend.Controllers
         public FoodItemsController(Context dbContext, Chronos chronos)
         {
             _dbContext = dbContext;
+
             _chronos = chronos;
         }
 
@@ -42,6 +44,7 @@ namespace PersonaBackend.Controllers
         [HttpPost("updateAllFood")]
         public async Task<IActionResult> updateAllFood()
         {
+            Debug.WriteLine("Update food");
             try
             {
                 var foodItems = await _dbContext.FoodItems
@@ -52,8 +55,13 @@ namespace PersonaBackend.Controllers
                 {
                     var ageInDays = _chronos.getAge(foodItem.FoodDateBought);
 
+                    Debug.WriteLine(ageInDays);
+
                     var maxDaysBeforeExpiry = foodItem.FoodStoredInElectronic ? 5 : 3;
                     var healthDecreasePerDay = 100 / maxDaysBeforeExpiry;
+
+
+                    Debug.WriteLine(healthDecreasePerDay);
 
                     foodItem.FoodHealth = Math.Max(0, 100 - (ageInDays * healthDecreasePerDay));
 
