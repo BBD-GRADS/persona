@@ -58,7 +58,7 @@ namespace PersonaBackend
             });
 
             builder.Services.AddSwaggerExamplesFromAssemblyOf<Program>();
-            // builder.Services.AddScoped<StockService>();
+            builder.Services.AddScoped<StockService>();
 
             #region DB setup
 
@@ -73,7 +73,11 @@ namespace PersonaBackend
             {
                 options.UseNpgsql(connectionString ??
                     throw new InvalidOperationException("Connection String not found or invalid"));
+                
             });
+            var optionsBuilder = new DbContextOptionsBuilder<Context>();
+            optionsBuilder.UseNpgsql(connectionString, options => options.CommandTimeout(180));
+            
 
             #endregion DB setup
 

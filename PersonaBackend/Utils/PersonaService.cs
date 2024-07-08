@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using System.Diagnostics;
+using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.EntityFrameworkCore;
@@ -106,6 +107,8 @@ namespace PersonaBackend.Utils
 
         public void UpdatePersonaFoodStorage(Persona persona)
         {
+            
+            Debug.WriteLine("In update food storage");
             try
             {
                 int numElectronicsOwned = persona.NumElectronicsOwned;
@@ -156,6 +159,8 @@ namespace PersonaBackend.Utils
                         DateOccurred = _chronos.GetCurrentDateString()
                     };
 
+                    died = true;
+
                     _dbContext.EventsOccurred.Add(eventOccurred);
                     _dbContext.Personas.Update(persona);
                     //_dbContext.SaveChanges();
@@ -164,6 +169,7 @@ namespace PersonaBackend.Utils
             }
             catch (Exception ex)
             {
+                Debug.WriteLine(ex);
                 return died;
             }
         }
@@ -265,7 +271,7 @@ namespace PersonaBackend.Utils
                         var requestBuyHouseData = new { buyerId = persona.Id, numUnits = random_capacity };
                         var requestBuyHouseJson = JsonConvert.SerializeObject(requestBuyHouseData);
                         var houseContent = new StringContent(requestBuyHouseJson, Encoding.UTF8, "application/json");
-                        var housePost = _httpClient.PostAsync("https://api.sales.projects.bbdgrad.com/api/buy", houseContent);
+                        // var housePost = _httpClient.PostAsync("https://api.sales.projects.bbdgrad.com/api/buy", houseContent);
 
                     }
                     else if (random_choice == 2)
@@ -273,7 +279,7 @@ namespace PersonaBackend.Utils
                         var requestRentHouseData = new { buyerId = persona.Id, numUnits = random_capacity };
                         var requestRentHouseJson = JsonConvert.SerializeObject(requestRentHouseData);
                         var houseContent = new StringContent(requestRentHouseJson, Encoding.UTF8, "application/json");
-                        var rentPost = _httpClient.PostAsync("https://api.rentals.projects.bbdgrad.com/api/rentals", houseContent);
+                        // var rentPost = _httpClient.PostAsync("https://api.rentals.projects.bbdgrad.com/api/rentals", houseContent);
                     }
 
 
@@ -306,7 +312,7 @@ namespace PersonaBackend.Utils
                 var requestData = new { personaId = persona.Id };
                 var requestJson = JsonConvert.SerializeObject(requestData);
                 var sickPersonaIdContent = new StringContent(requestJson, Encoding.UTF8, "application/json");
-                var housePost = _httpClient.PostAsync("https://api.care.projects.bbdgrad.com/api/patient", sickPersonaIdContent);
+                // var housePost = _httpClient.PostAsync("https://api.care.projects.bbdgrad.com/api/patient", sickPersonaIdContent);
 
                 persona.Sick = false;
                 _dbContext.Personas.Update(persona); // Update persona in DbContext

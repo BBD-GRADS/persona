@@ -46,10 +46,12 @@ namespace PersonaBackend.Controllers
         [SwaggerResponse(StatusCodes.Status200OK, "Simulation started successfully", typeof(ApiResponse<bool>))]
         public async Task<IActionResult> StartSimulation([FromBody] StartSimulationRequest request)
         {
+            Console.WriteLine("in start sim endpt");
             try
             {
                 if (request.action == "reset")
                 {
+                    Console.WriteLine("in reset");
                     await _awsManagerService.EnableSchedule("sim-schedule", false);
 
                     await DeleteAllDataAsync();
@@ -57,6 +59,7 @@ namespace PersonaBackend.Controllers
                 }
 
                 //TODO check  request data VALIDATE
+                Console.WriteLine("in start");
                 _chronos.SetSimulationStartDate(request.startTime);
                 var numberOfPersonas = 1000;
 
@@ -97,11 +100,11 @@ namespace PersonaBackend.Controllers
                 var requestData = new { PersonaIds = personaIDs };
                 var json = JsonConvert.SerializeObject(requestData);
                 var content = new StringContent(json, Encoding.UTF8, "application/json");
-                var response = await _httpClient.PostAsync("https://api.retailbank.projects.bbdgrad.com/api/customers", content);
-                if (!response.IsSuccessStatusCode)
-                {
+                // var response = await _httpClient.PostAsync("https://api.retailbank.projects.bbdgrad.com/api/customers", content);
+                // if (!response.IsSuccessStatusCode)
+                // {
                     // return StatusCode((int)response.StatusCode, new ApiResponse<bool> { Data = false, Message = "Failed to create persona accounts at the retail bank." });
-                }
+                // }
 
                 await _dbContext.Personas.AddRangeAsync(personas);
 
@@ -132,7 +135,7 @@ namespace PersonaBackend.Controllers
             catch (Exception ex)
             {
                 Console.WriteLine($"Exception occurred: {ex}");
-                return StatusCode(StatusCodes.Status500InternalServerError, new ApiResponse<bool> { Data = false, Message = "An error occurred while starting the simulation." });
+                return StatusCode(StatusCodes.Status500InternalServerError, new ApiResponse<bool> { Data = false, Message = $"An error occurred while starting the simulation. {ex}" });
             }
         }
 
@@ -148,6 +151,8 @@ namespace PersonaBackend.Controllers
             //_dbContext.EventTypes.RemoveRange(_dbContext.EventTypes);
 
             await _dbContext.Database.ExecuteSqlRawAsync("ALTER SEQUENCE \"Personas_id_seq\" RESTART WITH 1");
+            // await _dbContext.Database.ExecuteSqlRawAsync("ALTER SEQUENCE \"FoodItems_id_seq\" RESTART WITH 1");
+            // await _dbContext.Database.ExecuteSqlRawAsync("ALTER SEQUENCE \"EventsOccurred_id_seq\" RESTART WITH 1");
 
 
             await _dbContext.SaveChangesAsync();

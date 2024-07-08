@@ -18,14 +18,14 @@ resource "aws_s3_bucket" "backend_beanstalk" {
   force_destroy = true
 }
 
-resource "aws_elastic_beanstalk_application" "backend_beanstalk_final" {
-  name        = "api-app-final"
+resource "aws_elastic_beanstalk_application" "backend_beanstalk" {
+  name        = "api-app"
   description = "App for API"
 }
 
 resource "aws_elastic_beanstalk_environment" "backend_beanstalk" {
   name                = "api-env"
-  application         = aws_elastic_beanstalk_application.backend_beanstalk_final.name
+  application         = aws_elastic_beanstalk_application.backend_beanstalk.name
   solution_stack_name = "64bit Amazon Linux 2023 v3.1.2 running .NET 8"
   tier                = "WebServer"
   cname_prefix        = "api-persona"
@@ -182,6 +182,48 @@ resource "aws_elastic_beanstalk_environment" "backend_beanstalk" {
     namespace = "aws:elasticbeanstalk:application:environment"
     name      = "DB_URL"
     value     = module.rds.db_instance_address
+    resource  = ""
+  }
+  setting {
+    namespace = "aws:elasticbeanstalk:application:environment"
+    name      = "HOST"
+    value     = module.rds.db_instance_address
+    resource  = ""
+  }
+  setting {
+    namespace = "aws:elasticbeanstalk:application:environment"
+    name      = "USERNAME"
+    value     = var.db_username
+    resource  = ""
+  }
+  setting {
+    namespace = "aws:elasticbeanstalk:application:environment"
+    name      = "PASSWORD"
+    value     = var.db_password
+    resource  = ""
+  }
+  setting {
+    namespace = "aws:elasticbeanstalk:application:environment"
+    name      = "DATABASE_NAME"
+    value     = var.db_name
+    resource  = ""
+  }
+  setting {
+    namespace = "aws:elasticbeanstalk:application:environment"
+    name      = "AWS_ACCESS_KEY_ID"
+    value     = var.jc_access_key
+    resource  = ""
+  }
+  setting {
+    namespace = "aws:elasticbeanstalk:application:environment"
+    name      = "AWS_SECRET_ACCESS_KEY"
+    value     = var.jc_secret_key
+    resource  = ""
+  }
+  setting {
+    namespace = "aws:elasticbeanstalk:application:environment"
+    name      = "AWS_REGION"
+    value     = var.aws_region
     resource  = ""
   }
 }

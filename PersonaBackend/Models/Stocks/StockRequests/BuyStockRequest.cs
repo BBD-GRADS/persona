@@ -1,6 +1,6 @@
 ﻿namespace PersonaBackend.Models.Stocks.StockRequests
 {
-    public class BuyStockRequest
+    public class BuyStockRequestNew
     {
         public long PersonaId { get; set; } 
         public int BusinessId { get; set; } 

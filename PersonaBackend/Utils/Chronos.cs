@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 
 namespace PersonaBackend.Utils
 {
@@ -29,6 +30,8 @@ namespace PersonaBackend.Utils
         public int getAge(string date)
         {
             var currentDate = this.GetCurrentDateString();
+
+            // Debug.WriteLine("currentDate:", currentDate);
 
             var dateParts = date.Split('|');
             var currentParts = currentDate.Split('|');
@@ -62,6 +65,9 @@ namespace PersonaBackend.Utils
         {
             TimeSpan elapsedTime = GetCurrentElapsedSimulationTime();
             int totalDays = (int)Math.Floor(elapsedTime.TotalMinutes / 2);
+
+            // Debug.WriteLine("elapsedTime:", elapsedTime);
+            // Debug.WriteLine("totalDays:", totalDays);
 
             // Parse the simulation start date
             string[] startDateParts = simulationStartDateString.Split('|');

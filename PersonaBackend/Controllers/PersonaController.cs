@@ -9,6 +9,7 @@ using PersonaBackend.Models.Responses;
 using PersonaBackend.Utils;
 using Swashbuckle.AspNetCore.Annotations;
 using Swashbuckle.AspNetCore.Filters;
+using System.Diagnostics;
 using System.Globalization;
 
 namespace PersonaBackend.Controllers
@@ -39,15 +40,18 @@ namespace PersonaBackend.Controllers
         [HttpPost("updatePersonaEvent")] //2
         public async Task<IActionResult> updatePersonaEvent()
         {
+            Debug.WriteLine("Starting update");
             try
             {
                 await _awsManagerService.PutParameterAsync("/simulation/date", _chronos.GetCurrentDateString());
 
+                Debug.WriteLine("Getting alives:");
                 var alivePersonas = await _dbContext.Personas
                     .Where(p => p.Alive)
                     .Include(p => p.FoodInventory)
                     .ToListAsync();
 
+                // Debug.WriteLine(" for eaching");
                 foreach (var persona in alivePersonas)
                 {
                     persona.NextOfKinId = _personaService.GetNextOfKin(persona, alivePersonas);
@@ -55,6 +59,7 @@ namespace PersonaBackend.Controllers
                     var died = _personaService.CheckIfDie(persona);
                     if (died)
                     {
+                        persona.Alive = false;
                         continue;
                     }
 
@@ -65,16 +70,21 @@ namespace PersonaBackend.Controllers
                     }
 
                     persona.Hunger = 100;
+                    
+                    // Debug.WriteLine("Done next of kin, check if dead and adult update");
                     _personaService.UpdatePersonaFoodStorage(persona);
                     _personaService.EatFood(persona);
                     // buy item
                     _personaService.BuyItems(persona);
+                    // Debug.WriteLine("Finished food storage update, eating food and buying items");
 
                     if (persona.Sick)
                     {
                         _personaService.sendSickPersonToHealthcare(persona);
                     }
                 }
+                
+                Debug.WriteLine("End of foreach:", alivePersonas.Count);
                 _dbContext.UpdateRange(alivePersonas);
                 await _dbContext.SaveChangesAsync();
 
